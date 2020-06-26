@@ -38,16 +38,6 @@ class OrderBook
     }
 
     /**
-     * Unix timestamp date and time.
-     *
-     * @return int
-     */
-    public function timestamp(): int
-    {
-        return (int) $this->data['timestamp'];
-    }
-
-    /**
      * Whole data array.
      *
      * @return array

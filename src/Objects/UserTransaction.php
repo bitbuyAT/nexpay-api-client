@@ -28,17 +28,17 @@ class UserTransaction
     }
 
     /**
-     * Transaction ID.
+     * Trade ID.
      *
      * @return int
      */
-    public function getTransactionId(): int
+    public function getTradeId(): int
     {
         return $this->data['tid'];
     }
 
     /**
-     * Transaction type: 0 - deposit; 1 - withdrawal; 2 - market trade; 14 - sub account transfer.
+     * Trade type: 0 - deposit; 1 - withdrawal; 2 - market trade; 14 - sub account transfer.
      *
      * @return int
      */
@@ -110,7 +110,7 @@ class UserTransaction
     }
 
     /**
-     * Transaction fee.
+     * Trade fee.
      *
      * @return float
      */
@@ -120,7 +120,7 @@ class UserTransaction
     }
 
     /**
-     * Transaction fee.
+     * Trade fee.
      *
      * @return int
      */

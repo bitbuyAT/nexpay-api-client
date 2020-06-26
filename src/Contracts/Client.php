@@ -6,12 +6,23 @@ use bitbuyAT\Globitex\Objects\Balance;
 use bitbuyAT\Globitex\Objects\OrderBook;
 use bitbuyAT\Globitex\Objects\PairsCollection;
 use bitbuyAT\Globitex\Objects\Ticker;
-use bitbuyAT\Globitex\Objects\TransactionsCollection;
+use bitbuyAT\Globitex\Objects\TradesCollection;
 use bitbuyAT\Globitex\Objects\UserTransactionsCollection;
 use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
 
 interface Client
 {
+     /**
+     * Returns the server time in UNIX timestamp format. Precision – milliseconds.
+     *
+     * @param string $pair
+     *
+     * @return int
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getTime(): int;
+
     /**
      * Get ticker information.
      *
@@ -24,42 +35,27 @@ interface Client
     public function getTicker(string $pair): Ticker;
 
     /**
-     * Get hourly ticker information.
-     *
-     * @param string $pair
-     *
-     * @return Ticker
-     *
-     * @throws GlobitexApiErrorException
-     */
-    public function getHourlyTicker(string $pair): Ticker;
-
-    /**
      * Get order book.
      *
      * @param string $pair
-     * @param int    $group optional group
-     *                      0: orders are not grouped at same price
-     *                      1: orders are grouped at same price - default
-     *                      2: orders with their order ids are not grouped at same price
-     *
+     * 
      * @return OrderBook
      *
      * @throws GlobitexApiErrorException
      */
-    public function getOrderBook(string $pair, ?int $group = 1): OrderBook;
+    public function getOrderBook(string $pair): OrderBook;
 
     /**
-     * Get current transactions.
+     * Get current trades.
      *
      * @param string $pair
-     * @param string $time The time interval from which we want the transactions to be returned. Possible values are minute, hour (default) or day.
+     * @param string $formatItem Format of items returned: as a list of object (default) or as an array
      *
-     * @return TransactionsCollection|Transaction[]
+     * @return TradesCollection|Trade[]
      *
      * @throws GlobitexApiErrorException
      */
-    public function getTransactions(string $pair, ?string $time = 'hour'): TransactionsCollection;
+    public function getTrades(string $pair, ?string $formatItem = 'object'): TradesCollection;
 
     /**
      * Get tradable asset pairs.
@@ -80,15 +76,15 @@ interface Client
     public function getAccountBalance(): Balance;
 
     /**
-     * Get user transactions.
+     * Get user trades.
      *
      * @param string [$pair=null] - Pair to filter for, if left empty there will be queried for all pairs (default: null)
-     * @param int [$offset=0] - Skip that many transactions before returning results (default: 0)
-     * @param int [$limit=100] - Limit result to that many transactions (default: 100; maximum: 1000)
+     * @param int [$offset=0] - Skip that many trades before returning results (default: 0)
+     * @param int [$limit=100] - Limit result to that many trades (default: 100; maximum: 1000)
      * @param string [$sort='desc'] - Sorting by date and time: asc - ascending; desc - descending (default: desc)
-     * @param int [$sinceTimestamp] - Show only transactions from unix timestamp (for max 30 days old)
+     * @param int [$sinceTimestamp] - Show only trades from unix timestamp (for max 30 days old)
      *
-     * @return UserTransactionsCollection|Transaction[]
+     * @return UserTransactionsCollection|Trade[]
      *
      * @throws GlobitexApiErrorException
      */

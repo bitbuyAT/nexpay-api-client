@@ -8,8 +8,8 @@ use bitbuyAT\Globitex\Client;
 use bitbuyAT\Globitex\Objects\OrderBook;
 use bitbuyAT\Globitex\Objects\Pair;
 use bitbuyAT\Globitex\Objects\PairsCollection;
-use bitbuyAT\Globitex\Objects\Transaction;
-use bitbuyAT\Globitex\Objects\TransactionsCollection;
+use bitbuyAT\Globitex\Objects\Trade;
+use bitbuyAT\Globitex\Objects\TradesCollection;
 use bitbuyAT\Globitex\Objects\Ticker;
 use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
 
@@ -18,7 +18,7 @@ class PublicClientTest extends TestCase
     protected $globitexService;
     protected $ticker;
     protected $orderBook;
-    protected $transactions;
+    protected $trades;
     protected $assetPairs;
 
     protected function setUp(): void
@@ -26,13 +26,29 @@ class PublicClientTest extends TestCase
         parent::setUp();
         // instantiate service
         $this->globitexService = new Client(new HttpClient());
+    }
+
+    private function initTicker()
+    {
         // get ticker
-        $this->ticker = $this->globitexService->getTicker('btcusd');
+        $this->ticker = $this->globitexService->getTicker('BTCEUR');
+    }
+
+    private function initOrderBook()
+    {
         // get order book
-        $this->orderBook = $this->globitexService->getOrderBook('btcusd');
-        // get transactions
-        $this->transactions = $this->globitexService->getTransactions('btcusd');
-        // get transactions
+        $this->orderBook = $this->globitexService->getOrderBook('BTCEUR');
+    }
+
+    private function initTrades()
+    {
+        // get trades
+        $this->trades = $this->globitexService->getTrades('BTCEUR');
+    }
+
+    private function initAssetPairs()
+    {
+        // get trades
         $this->assetPairs = $this->globitexService->getAssetPairs();
     }
 
@@ -41,27 +57,37 @@ class PublicClientTest extends TestCase
         $this->assertInstanceOf(Client::class, $this->globitexService);
     }
 
+    public function test_get_time_returns_timestamp(): void
+    {
+        $timestamp = $this->globitexService->getTime();
+        $this->assertNotEmpty($timestamp);
+    }
+
     public function test_ticker_instance_can_be_created_from_get_ticker(): void
     {
+        $this->initTicker();
         $this->assertInstanceOf(Ticker::class, $this->ticker);
     }
 
-    public function test_get_data_of_ticker_returns_array_with_all_keys(): void
+    public function test_get_data_of_symbol_returns_array_with_all_keys(): void
     {
+        $this->initTicker();
         $data = $this->ticker->getData();
-        $this->assertArrayHasKey('last', $data);
-        $this->assertArrayHasKey('high', $data);
-        $this->assertArrayHasKey('low', $data);
-        $this->assertArrayHasKey('vwap', $data);
-        $this->assertArrayHasKey('volume', $data);
-        $this->assertArrayHasKey('bid', $data);
+        $this->assertEquals($data['symbol'], 'BTCEUR');
         $this->assertArrayHasKey('ask', $data);
-        $this->assertArrayHasKey('timestamp', $data);
+        $this->assertArrayHasKey('bid', $data);
+        $this->assertArrayHasKey('last', $data);
+        $this->assertArrayHasKey('low', $data);
+        $this->assertArrayHasKey('high', $data);
         $this->assertArrayHasKey('open', $data);
+        $this->assertArrayHasKey('volume', $data);
+        $this->assertArrayHasKey('volumeQuote', $data);
+        $this->assertArrayHasKey('timestamp', $data);
     }
 
     public function test_get_bid_and_ask_price_of_ticker(): void
     {
+        $this->initTicker();
         $data = $this->ticker->getData();
         $bidPrice = $this->ticker->bidPrice();
         $askPrice = $this->ticker->askPrice();
@@ -78,27 +104,23 @@ class PublicClientTest extends TestCase
         $this->globitexService->getTicker('abcdef');
     }
 
-    public function test_ticker_instance_can_be_created_from_get_hourly_ticker(): void
-    {
-        $hourlyTicker = $this->globitexService->getHourlyTicker('btcusd');
-        $this->assertInstanceOf(Ticker::class, $hourlyTicker);
-    }
-
     public function test_order_book_instance_can_be_created_from_get_order_book(): void
     {
+        $this->initOrderBook();
         $this->assertInstanceOf(OrderBook::class, $this->orderBook);
     }
 
     public function test_get_data_of_order_book_returns_array_with_all_keys(): void
     {
+        $this->initOrderBook();
         $data = $this->orderBook->getData();
-        $this->assertArrayHasKey('timestamp', $data);
         $this->assertArrayHasKey('bids', $data);
         $this->assertArrayHasKey('asks', $data);
     }
 
     public function test_get_bids_and_asks_order_book(): void
     {
+        $this->initOrderBook();
         $data = $this->orderBook->getData();
         $bidPrices = $this->orderBook->getBids();
         $askPrices = $this->orderBook->getAsks();
@@ -109,39 +131,41 @@ class PublicClientTest extends TestCase
         $this->assertEquals($data['asks'], $askPrices);
     }
 
-    public function test_transactions_collection_instance_can_be_created_from_get_transactions(): void
+    public function test_trades_collection_instance_can_be_created_from_get_trades(): void
     {
-        $this->assertInstanceOf(TransactionsCollection::class, $this->transactions);
+        $this->initTrades();
+        $this->assertInstanceOf(TradesCollection::class, $this->trades);
     }
 
-    public function test_first_of_transactions_returns_transaction_object(): void
+    public function test_first_of_trades_returns_trade_object(): void
     {
-        $firstTransaction = $this->transactions->first();
-        $data = $firstTransaction->getData();
-        $this->assertInstanceOf(Transaction::class, $firstTransaction);
+        $this->initTrades();
+        $firstTrade = $this->trades->first();
+        $data = $firstTrade->getData();
+        $this->assertInstanceOf(Trade::class, $firstTrade);
         $this->assertArrayHasKey('date', $data);
-        $this->assertArrayHasKey('tid', $data);
         $this->assertArrayHasKey('price', $data);
+        $this->assertArrayHasKey('tid', $data);
         $this->assertArrayHasKey('amount', $data);
-        $this->assertArrayHasKey('type', $data);
     }
 
     public function test_pairs_collection_instance_can_be_created_from_get_asset_pairs(): void
     {
+        $this->initAssetPairs();
         $this->assertInstanceOf(PairsCollection::class, $this->assetPairs);
     }
 
     public function test_first_of_pairs_returns_pair_object(): void
     {
+        $this->initAssetPairs();
         $firstPair = $this->assetPairs->first();
         $data = $firstPair->getData();
         $this->assertInstanceOf(Pair::class, $firstPair);
-        $this->assertArrayHasKey('name', $data);
-        $this->assertArrayHasKey('url_symbol', $data);
-        $this->assertArrayHasKey('base_decimals', $data);
-        $this->assertArrayHasKey('counter_decimals', $data);
-        $this->assertArrayHasKey('minimum_order', $data);
-        $this->assertArrayHasKey('trading', $data);
-        $this->assertArrayHasKey('description', $data);
+        $this->assertArrayHasKey('symbol', $data);
+        $this->assertArrayHasKey('priceIncrement', $data);
+        $this->assertArrayHasKey('sizeIncrement', $data);
+        $this->assertArrayHasKey('sizeMin', $data);
+        $this->assertArrayHasKey('currency', $data);
+        $this->assertArrayHasKey('commodity', $data);
     }
 }

@@ -48,16 +48,6 @@ class Ticker
     }
 
     /**
-     * Last 24 hours volume weighted average price.
-     *
-     * @return float
-     */
-    public function vawpPrice(): float
-    {
-        return (float) $this->data['vwap'];
-    }
-
-    /**
      * Last 24 hours volume.
      *
      * @return float
@@ -65,6 +55,16 @@ class Ticker
     public function volume(): float
     {
         return (float) $this->data['volume'];
+    }
+
+     /**
+     * Trade volume in second currency per last 24h + last incomplete minute
+     *
+     * @return float
+     */
+    public function volumeQuote(): float
+    {
+        return (float) $this->data['volumeQuote'];
     }
 
     /**

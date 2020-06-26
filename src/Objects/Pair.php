@@ -18,73 +18,63 @@ class Pair
     }
 
     /**
-     * Pair name.
+     * Instrument symbol.
      *
      * @return string
      */
-    public function name(): string
+    public function symbol(): string
     {
-        return $this->data['name'];
+        return $this->data['symbol'];
     }
 
     /**
-     * URL symbol of trading pair.
+     * Order price minimum increment parameter.
      *
      * @return string
      */
-    public function urlSymbol(): string
+    public function priceIncrement(): string
     {
-        return $this->data['url_symbol'];
+        return $this->data['priceIncrement'];
     }
 
     /**
-     * Decimal precision for base currency (f.e. BTC/USD - base: BTC).
+     * Order size minimum increment parameter.
      *
      * @return int
      */
-    public function baseDecimals(): int
+    public function sizeIncrement(): int
     {
-        return $this->data['base_decimals'];
+        return $this->data['sizeIncrement'];
     }
 
     /**
-     * Decimal precision for counter currency (f.e. BTC/USD - counter: USD).
+     * Minimum order size
      *
      * @return int
      */
-    public function counterDecimals(): int
+    public function sizeMin(): int
     {
-        return $this->data['counter_decimals'];
+        return $this->data['sizeMin'];
     }
 
     /**
-     * Minimum order size. (includes asset code in string).
+     * Price currency for the instrument.
      *
      * @return string
      */
-    public function minimumOrder(): string
+    public function currency(): string
     {
-        return $this->data['minimum_order'];
+        return $this->data['currency'];
     }
 
     /**
-     * Trading engine status (Enabled/Disabled).
+     * Base currency for the instrument
      *
      * @return string
      */
-    public function tradingStatus(): string
+    public function commodity(): string
     {
-        return $this->data['trading'];
-    }
-
-    /**
-     * Trading pair description.
-     *
-     * @return string
-     */
-    public function description(): string
-    {
-        return $this->data['description'];
+        return $this->data['commodity'];
     }
 
     /**

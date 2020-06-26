@@ -9,16 +9,16 @@ use bitbuyAT\Globitex\Objects\OrderBook;
 use bitbuyAT\Globitex\Objects\Pair;
 use bitbuyAT\Globitex\Objects\PairsCollection;
 use bitbuyAT\Globitex\Objects\Ticker;
-use bitbuyAT\Globitex\Objects\Transaction;
-use bitbuyAT\Globitex\Objects\TransactionsCollection;
+use bitbuyAT\Globitex\Objects\Trade;
+use bitbuyAT\Globitex\Objects\TradesCollection;
 use bitbuyAT\Globitex\Objects\UserTransaction;
 use bitbuyAT\Globitex\Objects\UserTransactionsCollection;
 use GuzzleHttp\ClientInterface as HttpClient;
 
 class Client implements ClientContract
 {
-    const API_URL = 'https://www.globitex.net/api';
-    const API_VERSION = 'v2';
+    const API_URL = 'https://api.globitex.com';
+    const API_VERSION = '1';
 
     /**
      * API key.
@@ -61,6 +61,22 @@ class Client implements ClientContract
     }
 
     /**
+     * Returns the server time in UNIX timestamp format. Precision – milliseconds.
+     *
+     * @param string $pair
+     *
+     * @return int
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getTime(): int
+    {
+        $result = $this->publicRequest('time');
+
+        return $result['timestamp'];
+    }
+
+     /**
      * Get ticker information.
      *
      * @param string $pair
@@ -77,58 +93,37 @@ class Client implements ClientContract
     }
 
     /**
-     * Get hourly ticker information.
-     *
-     * @param string $pair
-     *
-     * @return Ticker
-     *
-     * @throws GlobitexApiErrorException
-     */
-    public function getHourlyTicker(string $pair): Ticker
-    {
-        $result = $this->publicRequest('ticker_hour', $pair);
-
-        return new Ticker($result);
-    }
-
-    /**
      * Get order book.
      *
      * @param string $pair
-     * @param int    $group optional group
-     *                      0: orders are not grouped at same price
-     *                      1: orders are grouped at same price - default
-     *                      2: orders with their order ids are not grouped at same price
      *
      * @return OrderBook
      *
      * @throws GlobitexApiErrorException
      */
-    public function getOrderBook(string $pair, ?int $group = 1): OrderBook
+    public function getOrderBook(string $pair): OrderBook
     {
-        $result = $this->publicRequest('order_book', $pair, ['group' => $group]);
+        $result = $this->publicRequest('orderbook', $pair);
 
         return new OrderBook($result);
     }
 
     /**
-     * Get current transactions.
+     * Get current trades.
      *
      * @param string $pair
-     * @param string $time The time interval from which we want the transactions to be returned.
-     *                     Possible values are minute, hour (default) or day.
+     * @param string $formatItem Format of items returned: as a list of object (default) or as an array
      *
-     * @return TransactionsCollection|Transaction[]
+     * @return TradesCollection|Trade[]
      *
      * @throws GlobitexApiErrorException
      */
-    public function getTransactions(string $pair, ?string $time = 'hour'): TransactionsCollection
+    public function getTrades(string $pair, ?string $formatItem = 'object'): TradesCollection
     {
-        $result = $this->publicRequest('transactions', $pair, ['time' => $time]);
+        $result = $this->publicRequest('trades', $pair, ['formatItem' => $formatItem]);
 
-        return (new TransactionsCollection($result))->map(function ($data) {
-            return new Transaction($data);
+        return (new TradesCollection($result['trades']))->map(function ($data) {
+            return new Trade($data);
         });
     }
 
@@ -141,9 +136,9 @@ class Client implements ClientContract
      */
     public function getAssetPairs(): PairsCollection
     {
-        $result = $this->publicRequest('trading-pairs-info');
+        $result = $this->publicRequest('symbols');
 
-        return (new PairsCollection($result))->map(function ($data) {
+        return (new PairsCollection($result['symbols']))->map(function ($data) {
             return new Pair($data);
         });
     }
@@ -163,15 +158,15 @@ class Client implements ClientContract
     }
 
     /**
-     * Get user transactions.
+     * Get user trades.
      *
      * @param string [$pair=null] - Pair to filter for, if left empty there will be queried for all pairs (default: null)
-     * @param int [$offset=0] - Skip that many transactions before returning results (default: 0)
-     * @param int [$limit=100] - Limit result to that many transactions (default: 100; maximum: 1000)
+     * @param int [$offset=0] - Skip that many trades before returning results (default: 0)
+     * @param int [$limit=100] - Limit result to that many trades (default: 100; maximum: 1000)
      * @param string [$sort='desc'] - Sorting by date and time: asc - ascending; desc - descending (default: desc)
-     * @param int [$sinceTimestamp] - Show only transactions from unix timestamp (for max 30 days old)
+     * @param int [$sinceTimestamp] - Show only trades from unix timestamp (for max 30 days old)
      *
-     * @return UserTransactionsCollection|Transaction[]
+     * @return UserTransactionsCollection|Trade[]
      *
      * @throws GlobitexApiErrorException
      */
@@ -184,7 +179,7 @@ class Client implements ClientContract
             'sinceTimestamp' => $sinceTimestamp,
         ];
 
-        $result = $this->privateRequest('user_transactions/'.$pair, $params);
+        $result = $this->privateRequest('user_trades/'.$pair, $params);
 
         if (isset($result['status']) && $result['status'] === 'error') {
             throw new GlobitexApiErrorException($result['reason']);
@@ -212,7 +207,7 @@ class Client implements ClientContract
         $headers = ['User-Agent' => 'Globitex PHP API Agent'];
 
         try {
-            $response = $this->client->get($this->buildUrl($method).'/'.$path, [
+            $response = $this->client->get($this->buildUrl($method, true).($path ? '/' : '').$path, [
                 'headers' => $headers,
                 'query' => $parameters,
             ]);
@@ -271,24 +266,31 @@ class Client implements ClientContract
      * Build url.
      *
      * @param string $method
+     * @param bool $isPublic=false - indicator whether its a public call
      *
      * @return string
      */
-    protected function buildUrl(string $method): string
+    protected function buildUrl(string $method, bool $isPublic = false): string
     {
-        return static::API_URL.$this->buildPath($method);
+        return static::API_URL.$this->buildPath($method, $isPublic);
     }
 
     /**
      * Build path.
      *
      * @param string $method
+     * @param bool $isPublic=false - indicator whether its a public call
      *
      * @return string
      */
-    protected function buildPath(string $method): string
+    protected function buildPath(string $method, bool $isPublic = false): string
     {
-        return '/'.static::API_VERSION.'/'.$method;
+        $basePath = '/api/'.static::API_VERSION;
+        // add public string if set
+        if ($isPublic) {
+            $basePath .= '/public';
+        }
+        return $basePath.'/'.$method;
     }
 
     /**

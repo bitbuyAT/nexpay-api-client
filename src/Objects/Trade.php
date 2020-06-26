@@ -2,7 +2,7 @@
 
 namespace bitbuyAT\Globitex\Objects;
 
-class Transaction
+class Trade
 {
     /**
      * @var array
@@ -28,11 +28,11 @@ class Transaction
     }
 
     /**
-     * Transaction ID.
+     * Trade ID.
      *
      * @return int
      */
-    public function getTransactionId(): int
+    public function getTradeId(): int
     {
         return $this->data['tid'];
     }
@@ -55,17 +55,6 @@ class Transaction
     public function amount(): float
     {
         return (float) $this->data['amount'];
-    }
-
-    /**
-     * Type
-     * 0 (buy) or 1 (sell).
-     *
-     * @return int
-     */
-    public function type(): int
-    {
-        return (int) $this->data['type'];
     }
 
     /**

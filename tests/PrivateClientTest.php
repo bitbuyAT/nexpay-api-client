@@ -14,7 +14,7 @@ class PrivateClientTest extends TestCase
     protected $globitexService;
     protected $ticker;
     protected $orderBook;
-    protected $transactions;
+    protected $trades;
     protected $assetPairs;
 
     protected function setUp(): void
@@ -82,12 +82,12 @@ class PrivateClientTest extends TestCase
         $this->assertEquals($accountBalance->btceurFee(), $data['btceur_fee']);
     }
 
-    public function test_get_user_transactions(): void
+    public function test_get_user_trades(): void
     {
-        $userTransactions = $this->globitexService->getUserTransactions('btceur');
-        $firstUserTransaction = $userTransactions->first();
-        $this->assertInstanceOf(UserTransactionsCollection::class, $userTransactions);
-        // only do further tests if the user has transactions
+        $userTrades = $this->globitexService->getUserTransactions('btceur');
+        $firstUserTransaction = $userTrades->first();
+        $this->assertInstanceOf(UserTransactionsCollection::class, $userTrades);
+        // only do further tests if the user has trades
         if ($firstUserTransaction) {
             $data = $firstUserTransaction->getData();
             $this->assertInstanceOf(UserTransaction::class, $firstUserTransaction);
@@ -110,16 +110,16 @@ class PrivateClientTest extends TestCase
         }
     }
 
-    public function test_throw_error_on_invalid_params_when_getting_user_transactions(): void
+    public function test_throw_error_on_invalid_params_when_getting_user_trades(): void
     {
         $this->expectException(GlobitexApiErrorException::class);
         $this->expectExceptionMessage('Invalid offset.');
         $this->globitexService->getUserTransactions('btceur', -1);
     }
 
-    public function test_it_should_get_all_user_transactions_if_pair_is_empty(): void
+    public function test_it_should_get_all_user_trades_if_pair_is_empty(): void
     {
-        $userTransactions = $this->globitexService->getUserTransactions();
-        $this->assertInstanceOf(UserTransactionsCollection::class, $userTransactions);
+        $userTrades = $this->globitexService->getUserTransactions();
+        $this->assertInstanceOf(UserTransactionsCollection::class, $userTrades);
     }
 }
