@@ -33,7 +33,6 @@ class GlobitexServiceProvider extends ServiceProvider
                 new HttpClient(),
                 $config['key'] ?? null,
                 $config['secret'] ?? null,
-                $config['customer_id'] ?? null
             );
         });
     }

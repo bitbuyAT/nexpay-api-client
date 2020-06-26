@@ -2,16 +2,16 @@
 
 namespace bitbuyAT\Globitex\Tests;
 
-use PHPUnit\Framework\TestCase;
-use GuzzleHttp\Client as HttpClient;
 use bitbuyAT\Globitex\Client;
+use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
 use bitbuyAT\Globitex\Objects\OrderBook;
 use bitbuyAT\Globitex\Objects\Pair;
 use bitbuyAT\Globitex\Objects\PairsCollection;
+use bitbuyAT\Globitex\Objects\Ticker;
 use bitbuyAT\Globitex\Objects\Trade;
 use bitbuyAT\Globitex\Objects\TradesCollection;
-use bitbuyAT\Globitex\Objects\Ticker;
-use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
+use GuzzleHttp\Client as HttpClient;
+use PHPUnit\Framework\TestCase;
 
 class PublicClientTest extends TestCase
 {
@@ -122,8 +122,8 @@ class PublicClientTest extends TestCase
     {
         $this->initOrderBook();
         $data = $this->orderBook->getData();
-        $bidPrices = $this->orderBook->getBids();
-        $askPrices = $this->orderBook->getAsks();
+        $bidPrices = $this->orderBook->bids();
+        $askPrices = $this->orderBook->asks();
 
         $this->assertIsArray($bidPrices);
         $this->assertEquals($data['bids'], $bidPrices);

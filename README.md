@@ -1,8 +1,7 @@
-## This project is still work in progress, and not finished yet!
+*This project is only supporting a selected choice of api calls to the globitex api, feel free to contribute!*
 # globitex-api-client
-Client for Globitex.net HTTP API v2 with support for Laravel
-
-*The structure of this package was strongly influenced by the design of the [kraken-api-client](https://github.com/butschster/kraken-api-client) from Butschster.*
+Client for Globitex.net HTTP API with support for Laravel.
+API docs: https://globitex.com/api/ 
 
 # Install
 ```composer require bitbuy-at/globitex-api-client```
@@ -37,21 +36,42 @@ You can update your .env file with the following settings (only needed for priva
 ```
 GLOBITEX_KEY=key
 GLOBITEX_SECRET=secret
-GLOBITEX_CUSTOMER_ID=customer-id
 ```
 ## Usage
 
-### Get current prices
+### Get current prices 
 ```php
 use bitbuyAT\Globitex\Facade\Globitex;
 
+$tradingPair = 'BTCEUR';
 $prices = Globitex::getTicker($tradingPair);
 $prices->getData();
 $prices->askPrice();
 $prices->bidPrice();
 ```
 
-*More examples will follow soon.*
+*More examples can be found in the `/tests` folder.*
+
+### Supported Methods
+All currently supported methods with params explanation can be found in the client interface (`src/Contracts/Client.php`).
+
+#### Market Data methods (public)
+- [Get Time](https://globitex.com/api/#restGetTime): `Globitex::getTime(): int`
+- [Get Symbols](https://globitex.com/api/#restGetSymbols): `Globitex::getAssetPairs(): PairsCollection`
+- [Get Order Book For Symbol](https://globitex.com/api/#restGetOrderBook): `Globitex::getOrderBook(string $pair): OrderBook`
+
+#### Payment Data methods (private)
+- [Get Balance](https://globitex.com/api/#GetBalance): `Globitex::getAccountBalance(): AccountsCollection`
+- [Get Crypto Transaction Fee](https://globitex.com/api/#CryptoAddressGet): `Globitex::getCryptoTransactionFee(string $currency, string $amount, string $account): CryptoTransactionFee`
+- [Get Cryptocurrency Deposit Address](https://globitex.com/api/#CryptoAddressGet): `Globitex::getCryptoCurrencyDepositAddress(string $currency, ?string $account = null): string`
+- [Get Transaction List](https://globitex.com/api/#GetTransactionList): `Globitex::getTransactions(array $params = []): TransactionsCollection`
+- [Get GBX (Globitex Token) Utilization List](https://globitex.com/api/#GbxUtilizationList): `Globitex::getGBXUtilizationTransactions(array $params = []): GBXUtilizationTransactionsCollection`
+
+#### EURO wallet methods (private)
+- [Get Account Status](https://globitex.com/api/#GetAccountStatus): `Globitex::getEuroAccountStatus(): EuroAccountsCollection`
+- [Get Payment History](https://globitex.com/api/#GetPaymentHistory): `Globitex:: getEuroPaymentHistory(string $fromDate = null, string $toDate = null, string $account = null): EuroPaymentHistory`
+
+Do you need any further method, which is not listed here? Just open an issue with the required method or even better open a PR to speed things up!
 
 # Contributing
 Want to contribute? Great!

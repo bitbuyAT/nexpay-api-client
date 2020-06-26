@@ -9,9 +9,6 @@ class OrderBook
      */
     protected $data;
 
-    /**
-     * @param array $data
-     */
     public function __construct(array $data)
     {
         $this->data = $data;
@@ -19,28 +16,22 @@ class OrderBook
 
     /**
      * Get Bids prices.
-     *
-     * @return array
      */
-    public function getBids(): array
+    public function bids(): array
     {
         return $this->data['bids'];
     }
 
     /**
      * Get Asks prices.
-     *
-     * @return array
      */
-    public function getAsks(): array
+    public function asks(): array
     {
         return $this->data['asks'];
     }
 
     /**
      * Whole data array.
-     *
-     * @return array
      */
     public function getData(): array
     {

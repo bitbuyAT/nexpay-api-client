@@ -2,20 +2,23 @@
 
 namespace bitbuyAT\Globitex\Contracts;
 
-use bitbuyAT\Globitex\Objects\Balance;
+use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
+use bitbuyAT\Globitex\Objects\Account;
+use bitbuyAT\Globitex\Objects\AccountsCollection;
+use bitbuyAT\Globitex\Objects\CryptoTransactionFee;
+use bitbuyAT\Globitex\Objects\EuroAccountsCollection;
+use bitbuyAT\Globitex\Objects\EuroPaymentHistory;
+use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
 use bitbuyAT\Globitex\Objects\OrderBook;
 use bitbuyAT\Globitex\Objects\PairsCollection;
 use bitbuyAT\Globitex\Objects\Ticker;
 use bitbuyAT\Globitex\Objects\TradesCollection;
-use bitbuyAT\Globitex\Objects\UserTransactionsCollection;
-use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
+use bitbuyAT\Globitex\Objects\TransactionsCollection;
 
 interface Client
 {
-     /**
+    /**
      * Returns the server time in UNIX timestamp format. Precision – milliseconds.
-     *
-     * @param string $pair
      *
      * @return int
      *
@@ -26,8 +29,6 @@ interface Client
     /**
      * Get ticker information.
      *
-     * @param string $pair
-     *
      * @return Ticker
      *
      * @throws GlobitexApiErrorException
@@ -37,8 +38,6 @@ interface Client
     /**
      * Get order book.
      *
-     * @param string $pair
-     * 
      * @return OrderBook
      *
      * @throws GlobitexApiErrorException
@@ -48,7 +47,7 @@ interface Client
     /**
      * Get current trades.
      *
-     * @param string $pair
+     * @param string $pair       Pair to get trades of
      * @param string $formatItem Format of items returned: as a list of object (default) or as an array
      *
      * @return TradesCollection|Trade[]
@@ -69,34 +68,94 @@ interface Client
     /**
      * Get account balance.
      *
-     * @return Balance
+     * @return AccountsCollection|Account[]
      *
      * @throws GlobitexApiErrorException
      */
-    public function getAccountBalance(): Balance;
+    public function getAccountBalance(): AccountsCollection;
 
     /**
-     * Get user trades.
+     * Get Crypto Transaction Fee.
+     * Returns cryptocurrency withdrawal (miner) fee based on the provided parameters.
      *
-     * @param string [$pair=null] - Pair to filter for, if left empty there will be queried for all pairs (default: null)
-     * @param int [$offset=0] - Skip that many trades before returning results (default: 0)
-     * @param int [$limit=100] - Limit result to that many trades (default: 100; maximum: 1000)
-     * @param string [$sort='desc'] - Sorting by date and time: asc - ascending; desc - descending (default: desc)
-     * @param int [$sinceTimestamp] - Show only trades from unix timestamp (for max 30 days old)
+     * @param string $currency Currency code e.g. BTC
+     * @param string $amount   Withdrawal amount decimal (for example 1.23)
+     * @param string $account  number from which funds will be withdrawn (for example: XAZ123A91)
      *
-     * @return UserTransactionsCollection|Trade[]
+     * @return CryptoTransactionFee
      *
      * @throws GlobitexApiErrorException
      */
-    public function getUserTransactions(?string $pair = null, ?int $offset = 0, ?int $limit = 100, ?string $sort = 'desc', ?int $sinceTimestamp = null): UserTransactionsCollection;
+    public function getCryptoTransactionFee(string $currency, string $amount, string $account): CryptoTransactionFee;
+
+    /**
+     * Get Cryptocurrency Deposit Address.
+     * Returns the previously created incoming cryptocurrency address that can be used to deposit cryptocurrency to your account.
+     *
+     * @param string $currency Currency code e.g. BTC, for the cryptocurrency address
+     * @param string $amount   Account number the funds will be deposited on. If not provided the cryptocurrency deposit address for the default account will be provided (sample value: XAZ123A91)
+     *
+     * @return string $address Cryptocurrency deposit address
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getCryptoCurrencyDepositAddress(string $currency, ?string $account = null): string;
+
+    /**
+     * Get transactions.
+     * Returns a list of payment transactions and their status (array of transactions).
+     *
+     * @param array $params=[] Optional Parameters
+     *                         Params can be found under https://globitex.com/api/#GetTransactionList
+     *
+     * @return TransactionsCollection|Transaction[]
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getTransactions(array $params = []): TransactionsCollection;
+
+    /**
+     * Get GBX (Globitex Token) Utilization List.
+     * Returns a list of GBX utilization transactions (array of transactions).
+     *
+     * @param array $params=[] - Optional Parameters
+     *                         Params can be found under https://globitex.com/api/#GbxUtilizationList
+     *
+     * @return GBXUtilizationTransactionsCollection|GBXUtilizationTransaction[]
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getGBXUtilizationTransactions(array $params = []): GBXUtilizationTransactionsCollection;
+
+    /**
+     * Returns default (single) or all account status information.
+     *
+     * @return EuroAccountsCollection|EuroAccount[]
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getEuroAccountStatus(): EuroAccountsCollection;
+
+    /**
+     * Returns default (single) or all account status information.
+     *
+     * @param string $fromDate Date from to display account history. String in ISO 8601 format of yyyy-MM-dd, e.g. "2000-10-31"
+     * @param string $toDate   End date of account history to use in search criteria. String in ISO 8601 format of yyyy-MM-dd, e.g. "2000-10-31"
+     * @param string $account  Account IBAN number to use in search criteria. If not provided then default account number will be used
+     *
+     * @return EuroAccountsCollection|EuroAccount[]
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getEuroPaymentHistory(string $fromDate = null, string $toDate = null, string $account = null): EuroPaymentHistory;
 
     /**
      * Make public request request
      * Currently only get request.
      *
-     * @param string $method
-     * @param string $path
-     * @param array  $parameters
+     * @param string $method api method
+     * @param string $path additional path
+     * @param array $parameters query parameters
      *
      * @return array
      *
@@ -106,10 +165,10 @@ interface Client
 
     /**
      * Make private request request
-     * Currently only post request.
      *
-     * @param string $method
-     * @param array  $parameters
+     * @param string $method api method
+     * @param array $parameters query parameters
+     * @param string $httpMethod='post' http method
      *
      * @return array
      *

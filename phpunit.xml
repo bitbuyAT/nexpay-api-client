@@ -15,8 +15,8 @@
     </testsuites>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <!-- Please add your key and secret if you want to test private methods -->
         <env name="GLOBITEX_KEY" value="key"/>
         <env name="GLOBITEX_SECRET" value="secret"/>
-        <env name="GLOBITEX_CUSTOMER_ID" value="customerId"/>
     </php>
 </phpunit>

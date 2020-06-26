@@ -2,12 +2,14 @@
 
 namespace bitbuyAT\Globitex\Tests;
 
-use PHPUnit\Framework\TestCase;
-use GuzzleHttp\Client as HttpClient;
 use bitbuyAT\Globitex\Client;
-use bitbuyAT\Globitex\Objects\UserTransaction;
-use bitbuyAT\Globitex\Objects\UserTransactionsCollection;
 use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
+use bitbuyAT\Globitex\Objects\GBXUtilizationTransaction;
+use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
+use bitbuyAT\Globitex\Objects\Transaction;
+use bitbuyAT\Globitex\Objects\TransactionsCollection;
+use GuzzleHttp\Client as HttpClient;
+use PHPUnit\Framework\TestCase;
 
 class PrivateClientTest extends TestCase
 {
@@ -25,7 +27,6 @@ class PrivateClientTest extends TestCase
             new HttpClient(),
             getenv('GLOBITEX_KEY') ?? null,
             getenv('GLOBITEX_SECRET') ?? null,
-            getenv('GLOBITEX_CUSTOMER_ID') ?? null
         );
     }
 
@@ -34,92 +35,132 @@ class PrivateClientTest extends TestCase
         $this->assertInstanceOf(Client::class, $this->globitexService);
     }
 
-    public function test_get_account_balance(): void
+    public function test_get_first_account(): void
     {
-        $accountBalance = $this->globitexService->getAccountBalance();
-        $data = $accountBalance->getData();
-        $this->assertArrayHasKey('btc_balance', $data);
-        $this->assertArrayHasKey('bch_balance', $data);
-        $this->assertArrayHasKey('eth_balance', $data);
-        $this->assertArrayHasKey('ltc_balance', $data);
-        $this->assertArrayHasKey('eur_balance', $data);
-        $this->assertArrayHasKey('usd_balance', $data);
-        $this->assertArrayHasKey('xrp_balance', $data);
-        $this->assertArrayHasKey('btc_reserved', $data);
-        $this->assertArrayHasKey('bch_reserved', $data);
-        $this->assertArrayHasKey('eth_reserved', $data);
-        $this->assertArrayHasKey('ltc_reserved', $data);
-        $this->assertArrayHasKey('eur_reserved', $data);
-        $this->assertArrayHasKey('usd_reserved', $data);
-        $this->assertArrayHasKey('xrp_reserved', $data);
-        $this->assertArrayHasKey('btc_available', $data);
-        $this->assertArrayHasKey('bch_available', $data);
-        $this->assertArrayHasKey('eth_available', $data);
-        $this->assertArrayHasKey('ltc_available', $data);
-        $this->assertArrayHasKey('eur_available', $data);
-        $this->assertArrayHasKey('usd_available', $data);
-        $this->assertArrayHasKey('xrp_available', $data);
-        $this->assertArrayHasKey('bchbtc_fee', $data);
-        $this->assertArrayHasKey('bcheur_fee', $data);
-        $this->assertArrayHasKey('bchusd_fee', $data);
-        $this->assertArrayHasKey('btcusd_fee', $data);
-        $this->assertArrayHasKey('btceur_fee', $data);
-        $this->assertArrayHasKey('ethbtc_fee', $data);
-        $this->assertArrayHasKey('etheur_fee', $data);
-        $this->assertArrayHasKey('ethusd_fee', $data);
-        $this->assertArrayHasKey('ltcbtc_fee', $data);
-        $this->assertArrayHasKey('ltceur_fee', $data);
-        $this->assertArrayHasKey('ltcusd_fee', $data);
-        $this->assertArrayHasKey('eurusd_fee', $data);
-        $this->assertArrayHasKey('xrpusd_fee', $data);
-        $this->assertArrayHasKey('xrpeur_fee', $data);
-        $this->assertArrayHasKey('xrpbtc_fee', $data);
-
-        // test various methods
-        $this->assertEquals($accountBalance->eurBalance(), $data['eur_balance']);
-        $this->assertEquals($accountBalance->ethReserved(), $data['eth_reserved']);
-        $this->assertEquals($accountBalance->btcAvailable(), $data['btc_available']);
-        $this->assertEquals($accountBalance->btceurFee(), $data['btceur_fee']);
+        $accountBalances = $this->globitexService->getAccountBalance();
+        $firstPair = $accountBalances->first();
+        $data = $firstPair->getData();
+        $this->assertArrayHasKey('account', $data);
+        $this->assertArrayHasKey('main', $data);
+        $this->assertArrayHasKey('balance', $data);
     }
 
-    public function test_get_user_trades(): void
+    public function test_get_balance_of_first_account(): void
     {
-        $userTrades = $this->globitexService->getUserTransactions('btceur');
-        $firstUserTransaction = $userTrades->first();
-        $this->assertInstanceOf(UserTransactionsCollection::class, $userTrades);
-        // only do further tests if the user has trades
-        if ($firstUserTransaction) {
-            $data = $firstUserTransaction->getData();
-            $this->assertInstanceOf(UserTransaction::class, $firstUserTransaction);
-            $this->assertArrayHasKey('datetime', $data);
-            $this->assertArrayHasKey('id', $data);
-            $this->assertArrayHasKey('type', $data);
-            $this->assertArrayHasKey('usd', $data);
-            $this->assertArrayHasKey('eur', $data);
-            $this->assertArrayHasKey('btc', $data);
-            $this->assertArrayHasKey('btc_eur', $data);
-            $this->assertArrayHasKey('fee', $data);
-            $this->assertArrayHasKey('order_id', $data);
-            $this->assertArrayHasKey('btc', $data);
+        $accountBalances = $this->globitexService->getAccountBalance();
+        $firstPair = $accountBalances->first();
+        $balances = $firstPair->getBalance();
+        $firstBalance = $balances->first();
+        $data = $firstBalance->getData();
+        $this->assertArrayHasKey('currency', $data);
+        $this->assertArrayHasKey('available', $data);
+        $this->assertArrayHasKey('reserved', $data);
+    }
 
-            // test various methods
-            $this->assertEquals($firstUserTransaction->getDatetime(), $data['datetime']);
-            $this->assertEquals($firstUserTransaction->eur(), $data['eur']);
-            $this->assertEquals($firstUserTransaction->btceurExchangeRate(), $data['btc_eur']);
-            $this->assertEquals($firstUserTransaction->getFee(), $data['fee']);
+    public function test_get_get_crypto_transaction_fee(): void
+    {
+        $accountBalances = $this->globitexService->getAccountBalance();
+        $firstPair = $accountBalances->first();
+        $balances = $firstPair->getBalance();
+        $firstBalance = $balances->first();
+        $data = $firstBalance->getData();
+        // only call this method if there is sufficient balance found
+        if ($firstBalance->available() > 0) {
+            $transactionFee = $this->globitexService->getCryptoTransactionFee($firstBalance->currency(), $firstBalance->available(), $firstPair->accountNumber());
+            $data = $transactionFee->getData();
+            $this->assertArrayHasKey('currency', $data);
+            $this->assertArrayHasKey('available', $data);
+            $this->assertArrayHasKey('reserved', $data);
+        } else {
+            // otherwise expect exception if there are no funds left
+            $this->expectException(GlobitexApiErrorException::class);
+            $this->expectExceptionMessage('Invalid amount');
+            $transactionFee = $this->globitexService->getCryptoTransactionFee($firstBalance->currency(), $firstBalance->available(), $firstPair->accountNumber());
         }
     }
 
-    public function test_throw_error_on_invalid_params_when_getting_user_trades(): void
+    public function test_get_get_crypto_currency_deposit_address_for_btc_should_work(): void
     {
-        $this->expectException(GlobitexApiErrorException::class);
-        $this->expectExceptionMessage('Invalid offset.');
-        $this->globitexService->getUserTransactions('btceur', -1);
+        $address = $this->globitexService->getCryptoCurrencyDepositAddress('BTC');
+        $this->assertNotNull($address);
     }
 
-    public function test_it_should_get_all_user_trades_if_pair_is_empty(): void
+    public function test_get_transactions(): void
     {
-        $userTrades = $this->globitexService->getUserTransactions();
-        $this->assertInstanceOf(UserTransactionsCollection::class, $userTrades);
+        $userTransactions = $this->globitexService->getTransactions();
+        $firstTransaction = $userTransactions->first();
+        $this->assertInstanceOf(TransactionsCollection::class, $userTransactions);
+        // only do further tests if the user has a transaction
+        if ($firstTransaction) {
+            $data = $firstTransaction->getData();
+            $this->assertInstanceOf(Transaction::class, $firstTransaction);
+            $this->assertArrayHasKey('transactionCode', $data);
+            $this->assertArrayHasKey('created', $data);
+            $this->assertArrayHasKey('direction', $data);
+            $this->assertArrayHasKey('paymentType', $data);
+            $this->assertArrayHasKey('account', $data);
+            $this->assertArrayHasKey('currency', $data);
+            $this->assertArrayHasKey('amount', $data);
+            $this->assertArrayHasKey('status', $data);
+
+            // test various methods
+            $this->assertEquals($firstTransaction->transactionCode(), $data['transactionCode']);
+            $this->assertEquals($firstTransaction->created(), $data['created']);
+            $this->assertEquals($firstTransaction->direction(), $data['direction']);
+            $this->assertEquals($firstTransaction->paymentType(), $data['paymentType']);
+        }
+    }
+
+    public function test_get_gbx_utilization_transactions(): void
+    {
+        // TODO: Contact Support since Endpoint is not available
+        $this->markTestSkipped('Temporarly skipped due to API-Error');
+        $gbxUtilizationTransactions = $this->globitexService->getGBXUtilizationTransactions();
+        $firstTransaction = $gbxUtilizationTransactions->first();
+        $this->assertInstanceOf(GBXUtilizationTransactionsCollection::class, $gbxUtilizationTransactions);
+        // only do further tests if the user has a transaction
+        if ($firstTransaction) {
+            $data = $firstTransaction->getData();
+            $this->assertInstanceOf(GBXUtilizationTransaction::class, $firstTransaction);
+            $this->assertArrayHasKey('transactionCode', $data);
+            $this->assertArrayHasKey('created', $data);
+            $this->assertArrayHasKey('direction', $data);
+            $this->assertArrayHasKey('paymentType', $data);
+            $this->assertArrayHasKey('account', $data);
+            $this->assertArrayHasKey('currency', $data);
+            $this->assertArrayHasKey('amount', $data);
+            $this->assertArrayHasKey('status', $data);
+
+            // test various methods
+            $this->assertEquals($firstTransaction->transactionCode(), $data['transactionCode']);
+            $this->assertEquals($firstTransaction->created(), $data['created']);
+            $this->assertEquals($firstTransaction->direction(), $data['direction']);
+            $this->assertEquals($firstTransaction->paymentType(), $data['paymentType']);
+        }
+    }
+
+    public function test_get_euro_account_status(): void
+    {
+        $euroAccountBalances = $this->globitexService->getEuroAccountStatus();
+        $firstPair = $euroAccountBalances->first();
+        $data = $firstPair->getData();
+        $this->assertArrayHasKey('iban', $data);
+        $this->assertArrayHasKey('status', $data);
+        $this->assertArrayHasKey('balance', $data);
+    }
+
+    public function test_get_euro_payment_history(): void
+    {
+        // TODO: Contact Support since answer is 500er
+        $this->markTestSkipped('Temporarly skipped due to API-Error');
+        $euroPaymentHistory = $this->globitexService->getEuroPaymentHistory();
+        $data = $euroPaymentHistory->getData();
+        $this->assertArrayHasKey('debitTurnover', $data);
+        $this->assertArrayHasKey('creditTurnover', $data);
+        $this->assertArrayHasKey('balanceStart', $data);
+        $this->assertArrayHasKey('balanceEnd', $data);
+        $this->assertArrayHasKey('clientName', $data);
+        $this->assertArrayHasKey('account', $data);
+        $this->assertArrayHasKey('entries', $data);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace bitbuyAT\Globitex\Objects;
 
-class Balance
+class EuroAccount
 {
     /**
      * @var array
@@ -18,33 +18,33 @@ class Balance
     }
 
     /**
-     * Get Currency symbol, e.g. EUR
+     * Get IBAN number.
      *
      * @return string
      */
-    public function currency(): string
+    public function iban(): string
     {
-        return $this->data['currency'];
+        return $this->data['iban'];
     }
 
     /**
-     * Get currency amount available for trading or payments
+     * Get IBAN status (ACTIVE/CLOSE).
      *
      * @return string
      */
-    public function available(): string
+    public function status(): string
     {
-        return $this->data['available'];
+        return $this->data['status'];
     }
 
-     /**
-     * Currency amount reserved for active orders
+    /**
+     * Get account balance
      *
      * @return string
      */
-    public function reserved(): string
+    public function balance(): string
     {
-        return $this->data['reserved'];
+        return $this->data['balance'];
     }
 
     /**

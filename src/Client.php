@@ -4,15 +4,22 @@ namespace bitbuyAT\Globitex;
 
 use bitbuyAT\Globitex\Contracts\Client as ClientContract;
 use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
-use bitbuyAT\Globitex\Objects\Balance;
+use bitbuyAT\Globitex\Objects\Account;
+use bitbuyAT\Globitex\Objects\AccountsCollection;
+use bitbuyAT\Globitex\Objects\CryptoTransactionFee;
+use bitbuyAT\Globitex\Objects\EuroAccount;
+use bitbuyAT\Globitex\Objects\EuroAccountsCollection;
+use bitbuyAT\Globitex\Objects\EuroPaymentHistory;
+use bitbuyAT\Globitex\Objects\GBXUtilizationTransaction;
+use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
 use bitbuyAT\Globitex\Objects\OrderBook;
 use bitbuyAT\Globitex\Objects\Pair;
 use bitbuyAT\Globitex\Objects\PairsCollection;
 use bitbuyAT\Globitex\Objects\Ticker;
 use bitbuyAT\Globitex\Objects\Trade;
 use bitbuyAT\Globitex\Objects\TradesCollection;
-use bitbuyAT\Globitex\Objects\UserTransaction;
-use bitbuyAT\Globitex\Objects\UserTransactionsCollection;
+use bitbuyAT\Globitex\Objects\Transaction;
+use bitbuyAT\Globitex\Objects\TransactionsCollection;
 use GuzzleHttp\ClientInterface as HttpClient;
 
 class Client implements ClientContract
@@ -35,35 +42,23 @@ class Client implements ClientContract
     protected $secret;
 
     /**
-     * API secret.
-     *
-     * @var string
-     */
-    protected $customerId;
-
-    /**
      * @var HttpClient
      */
     protected $client;
 
     /**
-     * @param HttpClient $client
-     * @param string     $key      API key
-     * @param string     $secret   API secret
-     * @param string     $customerId customer id (can be found in account balance)
+     * @param string $key    API key
+     * @param string $secret API secret
      */
-    public function __construct(HttpClient $client, ?string $key = '', ?string $secret = '', ?string $customerId = '')
+    public function __construct(HttpClient $client, ?string $key = '', ?string $secret = '')
     {
         $this->client = $client;
         $this->key = $key;
         $this->secret = $secret;
-        $this->customerId = $customerId;
     }
 
     /**
      * Returns the server time in UNIX timestamp format. Precision – milliseconds.
-     *
-     * @param string $pair
      *
      * @return int
      *
@@ -76,10 +71,8 @@ class Client implements ClientContract
         return $result['timestamp'];
     }
 
-     /**
+    /**
      * Get ticker information.
-     *
-     * @param string $pair
      *
      * @return Ticker
      *
@@ -95,8 +88,6 @@ class Client implements ClientContract
     /**
      * Get order book.
      *
-     * @param string $pair
-     *
      * @return OrderBook
      *
      * @throws GlobitexApiErrorException
@@ -111,7 +102,7 @@ class Client implements ClientContract
     /**
      * Get current trades.
      *
-     * @param string $pair
+     * @param string $pair       Pair to get trades of
      * @param string $formatItem Format of items returned: as a list of object (default) or as an array
      *
      * @return TradesCollection|Trade[]
@@ -146,57 +137,149 @@ class Client implements ClientContract
     /**
      * Get account balance.
      *
-     * @return Balance
+     * @return AccountsCollection|Account[]
      *
      * @throws GlobitexApiErrorException
      */
-    public function getAccountBalance(): Balance
+    public function getAccountBalance(): AccountsCollection
     {
-        $result = $this->privateRequest('balance', []);
+        $result = $this->privateRequest('payment/accounts', [], 'get');
 
-        return new Balance($result);
+        return (new AccountsCollection($result['accounts']))->map(function ($data) {
+            return new Account($data);
+        });
     }
 
     /**
-     * Get user trades.
+     * Get Crypto Transaction Fee.
+     * Returns cryptocurrency withdrawal (miner) fee based on the provided parameters.
      *
-     * @param string [$pair=null] - Pair to filter for, if left empty there will be queried for all pairs (default: null)
-     * @param int [$offset=0] - Skip that many trades before returning results (default: 0)
-     * @param int [$limit=100] - Limit result to that many trades (default: 100; maximum: 1000)
-     * @param string [$sort='desc'] - Sorting by date and time: asc - ascending; desc - descending (default: desc)
-     * @param int [$sinceTimestamp] - Show only trades from unix timestamp (for max 30 days old)
+     * @param string $currency Currency code e.g. BTC
+     * @param string $amount   Withdrawal amount decimal (for example 1.23)
+     * @param string $account  number from which funds will be withdrawn (for example: XAZ123A91)
      *
-     * @return UserTransactionsCollection|Trade[]
+     * @return CryptoTransactionFee
      *
      * @throws GlobitexApiErrorException
      */
-    public function getUserTransactions(?string $pair = null, ?int $offset = 0, ?int $limit = 100, ?string $sort = 'desc', ?int $sinceTimestamp = null): UserTransactionsCollection
+    public function getCryptoTransactionFee(string $currency, string $amount, string $account): CryptoTransactionFee
     {
-        $params = [
-            'offset' => $offset,
-            'limit' => $limit,
-            'sort' => $sort,
-            'sinceTimestamp' => $sinceTimestamp,
-        ];
+        $result = $this->privateRequest('payment/payout/fee/crypto', [
+            'currency' => $currency,
+            'amount' => $amount,
+            'account' => $account,
+        ], 'get');
 
-        $result = $this->privateRequest('user_trades/'.$pair, $params);
+        return new CryptoTransactionFee($result);
+    }
 
-        if (isset($result['status']) && $result['status'] === 'error') {
-            throw new GlobitexApiErrorException($result['reason']);
-        }
+    /**
+     * Get Cryptocurrency Deposit Address.
+     * Returns the previously created incoming cryptocurrency address that can be used to deposit cryptocurrency to your account.
+     *
+     * @param string $currency Currency code e.g. BTC, for the cryptocurrency address
+     * @param string $amount   Account number the funds will be deposited on. If not provided the cryptocurrency deposit address for the default account will be provided (sample value: XAZ123A91)
+     *
+     * @return string $address Cryptocurrency deposit address
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getCryptoCurrencyDepositAddress(string $currency, ?string $account = null): string
+    {
+        $result = $this->privateRequest('payment/deposit/crypto/address', [
+            'currency' => $currency,
+            'account' => $account,
+        ], 'get');
 
-        return (new UserTransactionsCollection($result))->map(function ($data) {
-            return new UserTransaction($data);
+        return $result['address'];
+    }
+
+    /**
+     * Get transactions.
+     * Returns a list of payment transactions and their status (array of transactions).
+     *
+     * @param array $params=[] Optional Parameters
+     *                         Params can be found under https://globitex.com/api/#GetTransactionList
+     *
+     * @return TransactionsCollection|Transaction[]
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getTransactions(array $params = []): TransactionsCollection
+    {
+        $result = $this->privateRequest('payment/transactions', $params, 'get');
+
+        return (new TransactionsCollection($result['transactions']))->map(function ($data) {
+            return new Transaction($data);
         });
+    }
+
+    /**
+     * Get GBX (Globitex Token) Utilization List.
+     * Returns a list of GBX utilization transactions (array of transactions).
+     *
+     * @param array $params=[] - Optional Parameters
+     *                         Params can be found under https://globitex.com/api/#GbxUtilizationList
+     *                         TODO: Wrong Endpoint?
+     *
+     * @return GBXUtilizationTransactionsCollection|GBXUtilizationTransaction[]
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getGBXUtilizationTransactions(array $params = []): GBXUtilizationTransactionsCollection
+    {
+        $result = $this->privateRequest('gbxUtilization/list', $params, 'get');
+
+        return (new GBXUtilizationTransactionsCollection($result['gbxUtilizationList']))->map(function ($data) {
+            return new GBXUtilizationTransaction($data);
+        });
+    }
+
+    /**
+     * Returns default (single) or all account status information.
+     *
+     * @return EuroAccountsCollection|EuroAccount[]
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getEuroAccountStatus(): EuroAccountsCollection
+    {
+        $result = $this->privateRequest('eurowallet/status', [], 'get');
+
+        return (new EuroAccountsCollection($result['accounts']))->map(function ($data) {
+            return new EuroAccount($data);
+        });
+    }
+
+    /**
+     * Returns default (single) or all account status information.
+     *
+     * @param string $fromDate Date from to display account history. String in ISO 8601 format of yyyy-MM-dd, e.g. "2000-10-31"
+     * @param string $toDate   End date of account history to use in search criteria. String in ISO 8601 format of yyyy-MM-dd, e.g. "2000-10-31"
+     * @param string $account  Account IBAN number to use in search criteria. If not provided then default account number will be used
+     *
+     * @return EuroAccountsCollection|EuroAccount[]
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getEuroPaymentHistory(string $fromDate = null, string $toDate = null, string $account = null): EuroPaymentHistory
+    {
+        $result = $this->privateRequest('eurowallet/payments/history', [
+             'fromDate' => $fromDate,
+            'toDate' => $toDate,
+            'account' => $account,
+        ], 'get');
+
+        return new EuroPaymentHistory($result);
     }
 
     /**
      * Make public request request
      * Currently only get request.
      *
-     * @param string $method
-     * @param string $path
-     * @param array  $parameters
+     * @param string $method     api method
+     * @param string $path       additional path
+     * @param array  $parameters query parameters
      *
      * @return array
      *
@@ -225,30 +308,36 @@ class Client implements ClientContract
     }
 
     /**
-     * Make private request request
-     * Currently only post request.
+     * Make private request request.
      *
-     * @param string $method
-     * @param array  $parameters
+     * @param string $method            api method
+     * @param array  $parameters        query parameters
+     * @param string $httpMethod='post' http method
      *
      * @return array
      *
      * @throws GlobitexApiErrorException
      */
-    public function privateRequest(string $method, array $parameters = []): array
+    public function privateRequest(string $method, array $parameters = [], string $httpMethod = 'post'): array
     {
         $headers = ['User-Agent' => 'Globitex PHP API Agent'];
 
-        $parameters['nonce'] = $this->generateNonce();
-        $parameters['key'] = $this->key;
-        $parameters['signature'] = $this->generateSign();
+        $headers['X-Nonce'] = $this->generateNonce();
+        $headers['X-API-Key'] = $this->key;
+        $headers['X-Signature'] = $this->generateSign($method, $parameters);
 
         try {
-            $response = $this->client->post($this->buildUrl($method).'/', [
-                'headers' => $headers,
-                'form_params' => $parameters,
-                'verify' => true,
-            ]);
+            if ($httpMethod === 'post') {
+                $response = $this->client->post($this->buildUrl($method), [
+                    'headers' => $headers,
+                    'form_params' => $parameters,
+                ]);
+            } else {
+                $response = $this->client->get($this->buildUrl($method), [
+                    'headers' => $headers,
+                    'query' => $parameters,
+                ]);
+            }
         } catch (\Exception $exception) {
             if ($exception->getCode() === 404) {
                 throw new GlobitexApiErrorException('Endpoint not found: ('.$this->buildUrl($method).')');
@@ -265,7 +354,6 @@ class Client implements ClientContract
     /**
      * Build url.
      *
-     * @param string $method
      * @param bool $isPublic=false - indicator whether its a public call
      *
      * @return string
@@ -278,7 +366,6 @@ class Client implements ClientContract
     /**
      * Build path.
      *
-     * @param string $method
      * @param bool $isPublic=false - indicator whether its a public call
      *
      * @return string
@@ -290,25 +377,33 @@ class Client implements ClientContract
         if ($isPublic) {
             $basePath .= '/public';
         }
+
         return $basePath.'/'.$method;
     }
 
     /**
-     * Compute globitex signature
-     * message = nonce + customer_id + api_key
-     * signature = hmac.new(
-     *   API_SECRET,
-     *   msg=message,
-     *   digestmod=hashlib.sha256
-     * ).hexdigest().upper().
+     * Compute globitex signature.
+     *
+     * uri = path [+ '?' + query]
+     *
+     * message = apikey + '&' + nonce + uri [+ ? + requestBody]
+     *
+     * signature = lower_case(hex(hmac_sha512(message.getBytes(‘UTF-8’), secret_key.getBytes(‘UTF-8’) )))
      *
      * @return string
      */
-    protected function generateSign(): string
+    protected function generateSign(string $uri, array $parameters = []): string
     {
-        $message = $this->nonce.$this->customerId.$this->key;
+        $fullUri = $this->buildPath($uri);
 
-        return strtoupper(hash_hmac('sha256', $message, $this->secret));
+        // add queryString to uri (if parameters set and not empty)
+        if (!empty($parameters) && $queryString = http_build_query($parameters, '', '&')) {
+            $fullUri .= '?'.$queryString;
+        }
+
+        $message = $this->key.'&'.$this->nonce.$fullUri;
+
+        return strtolower(hash_hmac('sha512', utf8_encode($message), utf8_encode($this->secret)));
     }
 
     /**

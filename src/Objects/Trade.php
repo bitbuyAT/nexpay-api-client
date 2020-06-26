@@ -9,9 +9,6 @@ class Trade
      */
     protected $data;
 
-    /**
-     * @param array $data
-     */
     public function __construct(array $data)
     {
         $this->data = $data;
@@ -19,28 +16,22 @@ class Trade
 
     /**
      * Unix timestamp date and time.
-     *
-     * @return int
      */
-    public function getDate(): int
+    public function date(): int
     {
         return $this->data['date'];
     }
 
     /**
      * Trade ID.
-     *
-     * @return int
      */
-    public function getTradeId(): int
+    public function tradeId(): int
     {
         return $this->data['tid'];
     }
 
     /**
      * Price.
-     *
-     * @return float
      */
     public function price(): float
     {
@@ -49,8 +40,6 @@ class Trade
 
     /**
      * Amount.
-     *
-     * @return float
      */
     public function amount(): float
     {
@@ -59,8 +48,6 @@ class Trade
 
     /**
      * Whole data array.
-     *
-     * @return array
      */
     public function getData(): array
     {
