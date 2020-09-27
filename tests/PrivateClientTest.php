@@ -57,7 +57,7 @@ class PrivateClientTest extends TestCase
         $this->assertArrayHasKey('reserved', $data);
     }
 
-    public function test_get_get_crypto_transaction_fee(): void
+    public function test_get_crypto_transaction_fee(): void
     {
         $accountBalances = $this->globitexService->getAccountBalance();
         $firstPair = $accountBalances->first();
@@ -68,9 +68,11 @@ class PrivateClientTest extends TestCase
         if ($firstBalance->available() > 0) {
             $transactionFee = $this->globitexService->getCryptoTransactionFee($firstBalance->currency(), $firstBalance->available(), $firstPair->accountNumber());
             $data = $transactionFee->getData();
-            $this->assertArrayHasKey('currency', $data);
-            $this->assertArrayHasKey('available', $data);
-            $this->assertArrayHasKey('reserved', $data);
+            $this->assertArrayHasKey('recommended', $data);
+            $this->assertArrayHasKey('minimum', $data);
+            $this->assertArrayHasKey('maximum', $data);
+            $this->assertArrayHasKey('feeId', $data);
+            $this->assertArrayHasKey('feeExpireTime', $data);
         } else {
             // otherwise expect exception if there are no funds left
             $this->expectException(GlobitexApiErrorException::class);
@@ -79,7 +81,7 @@ class PrivateClientTest extends TestCase
         }
     }
 
-    public function test_get_get_crypto_currency_deposit_address_for_btc_should_work(): void
+    public function test_get_crypto_currency_deposit_address_for_btc_should_work(): void
     {
         $address = $this->globitexService->getCryptoCurrencyDepositAddress('BTC');
         $this->assertNotNull($address);
@@ -113,8 +115,6 @@ class PrivateClientTest extends TestCase
 
     public function test_get_gbx_utilization_transactions(): void
     {
-        // TODO: Contact Support since Endpoint is not available
-        $this->markTestSkipped('Temporarly skipped due to API-Error');
         $gbxUtilizationTransactions = $this->globitexService->getGBXUtilizationTransactions();
         $firstTransaction = $gbxUtilizationTransactions->first();
         $this->assertInstanceOf(GBXUtilizationTransactionsCollection::class, $gbxUtilizationTransactions);

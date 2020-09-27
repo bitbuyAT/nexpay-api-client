@@ -220,7 +220,6 @@ class Client implements ClientContract
      *
      * @param array $params=[] - Optional Parameters
      *                         Params can be found under https://globitex.com/api/#GbxUtilizationList
-     *                         TODO: Wrong Endpoint?
      *
      * @return GBXUtilizationTransactionsCollection|GBXUtilizationTransaction[]
      *
@@ -228,7 +227,7 @@ class Client implements ClientContract
      */
     public function getGBXUtilizationTransactions(array $params = []): GBXUtilizationTransactionsCollection
     {
-        $result = $this->privateRequest('gbxUtilization/list', $params, 'get');
+        $result = $this->privateRequest('gbx-utilization/list', $params, 'get');
 
         return (new GBXUtilizationTransactionsCollection($result['gbxUtilizationList']))->map(function ($data) {
             return new GBXUtilizationTransaction($data);
@@ -265,7 +264,7 @@ class Client implements ClientContract
     public function getEuroPaymentHistory(string $fromDate = null, string $toDate = null, string $account = null): EuroPaymentHistory
     {
         $result = $this->privateRequest('eurowallet/payments/history', [
-             'fromDate' => $fromDate,
+            'fromDate' => $fromDate,
             'toDate' => $toDate,
             'account' => $account,
         ], 'get');
