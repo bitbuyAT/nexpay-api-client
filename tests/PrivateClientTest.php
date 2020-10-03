@@ -125,17 +125,15 @@ class PrivateClientTest extends TestCase
             $this->assertArrayHasKey('transactionCode', $data);
             $this->assertArrayHasKey('created', $data);
             $this->assertArrayHasKey('direction', $data);
-            $this->assertArrayHasKey('paymentType', $data);
-            $this->assertArrayHasKey('account', $data);
-            $this->assertArrayHasKey('currency', $data);
             $this->assertArrayHasKey('amount', $data);
-            $this->assertArrayHasKey('status', $data);
+            $this->assertArrayHasKey('currency', $data);
+            $this->assertArrayHasKey('account', $data);
+            $this->assertArrayHasKey('details', $data);
 
             // test various methods
             $this->assertEquals($firstTransaction->transactionCode(), $data['transactionCode']);
             $this->assertEquals($firstTransaction->created(), $data['created']);
             $this->assertEquals($firstTransaction->direction(), $data['direction']);
-            $this->assertEquals($firstTransaction->paymentType(), $data['paymentType']);
         }
     }
 
@@ -151,8 +149,6 @@ class PrivateClientTest extends TestCase
 
     public function test_get_euro_payment_history(): void
     {
-        // TODO: Contact Support since answer is 500er
-        $this->markTestSkipped('Temporarly skipped due to API-Error');
         $euroPaymentHistory = $this->globitexService->getEuroPaymentHistory();
         $data = $euroPaymentHistory->getData();
         $this->assertArrayHasKey('debitTurnover', $data);

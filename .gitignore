@@ -3,3 +3,4 @@ composer.phar
 /vendor/
 .env
 .phpunit.result.cache
+phpunit.xml
