@@ -89,6 +89,9 @@ Just fork our code, make your changes, then let us know and we will review it.
 
 We are constantly updating and improving our code. We hope it can be for the benefit of the entire community.
 
+# Who are we?
+This package is maintained by bitbuy.at (bitbuy GmbH), a Vienna based Bitcoin Store offering fast and cheap in-person fiat <> crypto trades. Feel free to visit our website for more info, if you're based in Vienna and looking to [buy Bitcoin for cash](https://bitbuy.at/buy/bitcoin/). You can also [sell your Bitcoin for cash](https://bitbuy.at/sell/bitcoin/) in our store.
+
 # License
 MIT License
 
