@@ -26,7 +26,8 @@ class PrivateClientTest extends TestCase
         $this->globitexService = new Client(
             new HttpClient(),
             getenv('GLOBITEX_KEY') ?? null,
-            getenv('GLOBITEX_SECRET') ?? null,
+            getenv('GLOBITEX_MESSAGE_SECRET') ?? null,
+            getenv('GLOBITEX_OUTGOING_SECRET') ?? null,
         );
     }
 
