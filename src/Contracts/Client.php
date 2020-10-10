@@ -8,7 +8,9 @@ use bitbuyAT\Globitex\Objects\AccountsCollection;
 use bitbuyAT\Globitex\Objects\CryptoTransactionFee;
 use bitbuyAT\Globitex\Objects\EuroAccountsCollection;
 use bitbuyAT\Globitex\Objects\EuroPaymentHistory;
+use bitbuyAT\Globitex\Objects\ExecutionReport;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
+use bitbuyAT\Globitex\Objects\NewOrderParameters;
 use bitbuyAT\Globitex\Objects\OrderBook;
 use bitbuyAT\Globitex\Objects\PairsCollection;
 use bitbuyAT\Globitex\Objects\Ticker;
@@ -20,8 +22,6 @@ interface Client
     /**
      * Returns the server time in UNIX timestamp format. Precision – milliseconds.
      *
-     * @return int
-     *
      * @throws GlobitexApiErrorException
      */
     public function getTime(): int;
@@ -29,16 +29,12 @@ interface Client
     /**
      * Get ticker information.
      *
-     * @return Ticker
-     *
      * @throws GlobitexApiErrorException
      */
     public function getTicker(string $pair): Ticker;
 
     /**
      * Get order book.
-     *
-     * @return OrderBook
      *
      * @throws GlobitexApiErrorException
      */
@@ -66,6 +62,16 @@ interface Client
     public function getAssetPairs(): PairsCollection;
 
     /**
+     * Place New Order.
+     * Returns a JSON object ExecutionReport that represent a status of the order.
+     *
+     * @param NewOrderParameters
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function placeNewOrder(NewOrderParameters $newOrderParams): ExecutionReport;
+
+    /**
      * Get account balance.
      *
      * @return AccountsCollection|Account[]
@@ -81,8 +87,6 @@ interface Client
      * @param string $currency Currency code e.g. BTC
      * @param string $amount   Withdrawal amount decimal (for example 1.23)
      * @param string $account  number from which funds will be withdrawn (for example: XAZ123A91)
-     *
-     * @return CryptoTransactionFee
      *
      * @throws GlobitexApiErrorException
      */
@@ -153,24 +157,20 @@ interface Client
      * Make public request request
      * Currently only get request.
      *
-     * @param string $method api method
-     * @param string $path additional path
-     * @param array $parameters query parameters
-     *
-     * @return array
+     * @param string $method     api method
+     * @param string $path       additional path
+     * @param array  $parameters query parameters
      *
      * @throws GlobitexApiErrorException
      */
     public function publicRequest(string $method, string $path = '', $parameters = []): array;
 
     /**
-     * Make private request request
+     * Make private request request.
      *
-     * @param string $method api method
-     * @param array $parameters query parameters
+     * @param string $method            api method
+     * @param array  $parameters        query parameters
      * @param string $httpMethod='post' http method
-     *
-     * @return array
      *
      * @throws GlobitexApiErrorException
      */

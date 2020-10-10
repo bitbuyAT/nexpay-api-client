@@ -10,8 +10,10 @@ use bitbuyAT\Globitex\Objects\CryptoTransactionFee;
 use bitbuyAT\Globitex\Objects\EuroAccount;
 use bitbuyAT\Globitex\Objects\EuroAccountsCollection;
 use bitbuyAT\Globitex\Objects\EuroPaymentHistory;
+use bitbuyAT\Globitex\Objects\ExecutionReport;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransaction;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
+use bitbuyAT\Globitex\Objects\NewOrderParameters;
 use bitbuyAT\Globitex\Objects\OrderBook;
 use bitbuyAT\Globitex\Objects\Pair;
 use bitbuyAT\Globitex\Objects\PairsCollection;
@@ -35,11 +37,17 @@ class Client implements ClientContract
     protected $key;
 
     /**
-     * API secret.
+     * API message signing secret.
      *
      * @var string
      */
-    protected $secret;
+    protected $message_secret;
+    /**
+     * API outgoing secret secret.
+     *
+     * @var string
+     */
+    protected $outgoing_secret;
 
     /**
      * @var HttpClient
@@ -47,20 +55,24 @@ class Client implements ClientContract
     protected $client;
 
     /**
-     * @param string $key    API key
-     * @param string $secret API secret
+     * @param string $key             API key
+     * @param string $message_secret  API message secret
+     * @param string $outgoing_secret API outgoing secret
      */
-    public function __construct(HttpClient $client, ?string $key = '', ?string $secret = '')
-    {
+    public function __construct(
+        HttpClient $client,
+        ?string $key = '',
+        ?string $message_secret = '',
+        ?string $outgoing_secret = ''
+    ) {
         $this->client = $client;
         $this->key = $key;
-        $this->secret = $secret;
+        $this->message_secret = $message_secret;
+        $this->outgoing_secret = $outgoing_secret;
     }
 
     /**
      * Returns the server time in UNIX timestamp format. Precision – milliseconds.
-     *
-     * @return int
      *
      * @throws GlobitexApiErrorException
      */
@@ -74,8 +86,6 @@ class Client implements ClientContract
     /**
      * Get ticker information.
      *
-     * @return Ticker
-     *
      * @throws GlobitexApiErrorException
      */
     public function getTicker(string $pair): Ticker
@@ -87,8 +97,6 @@ class Client implements ClientContract
 
     /**
      * Get order book.
-     *
-     * @return OrderBook
      *
      * @throws GlobitexApiErrorException
      */
@@ -135,6 +143,21 @@ class Client implements ClientContract
     }
 
     /**
+     * Place New Order.
+     * Returns a JSON object ExecutionReport that represent a status of the order.
+     *
+     * @param NewOrderParameters
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function placeNewOrder(NewOrderParameters $newOrderParams): ExecutionReport
+    {
+        $result = $this->privateRequest('trading/new_order', $newOrderParams->getParameters(), 'post');
+
+        return new ExecutionReport($result['ExecutionReport']);
+    }
+
+    /**
      * Get account balance.
      *
      * @return AccountsCollection|Account[]
@@ -157,8 +180,6 @@ class Client implements ClientContract
      * @param string $currency Currency code e.g. BTC
      * @param string $amount   Withdrawal amount decimal (for example 1.23)
      * @param string $account  number from which funds will be withdrawn (for example: XAZ123A91)
-     *
-     * @return CryptoTransactionFee
      *
      * @throws GlobitexApiErrorException
      */
@@ -280,8 +301,6 @@ class Client implements ClientContract
      * @param string $path       additional path
      * @param array  $parameters query parameters
      *
-     * @return array
-     *
      * @throws GlobitexApiErrorException
      */
     public function publicRequest(string $method, string $path = '', $parameters = []): array
@@ -312,8 +331,6 @@ class Client implements ClientContract
      * @param string $method            api method
      * @param array  $parameters        query parameters
      * @param string $httpMethod='post' http method
-     *
-     * @return array
      *
      * @throws GlobitexApiErrorException
      */
@@ -354,8 +371,6 @@ class Client implements ClientContract
      * Build url.
      *
      * @param bool $isPublic=false - indicator whether its a public call
-     *
-     * @return string
      */
     protected function buildUrl(string $method, bool $isPublic = false): string
     {
@@ -366,8 +381,6 @@ class Client implements ClientContract
      * Build path.
      *
      * @param bool $isPublic=false - indicator whether its a public call
-     *
-     * @return string
      */
     protected function buildPath(string $method, bool $isPublic = false): string
     {
@@ -388,8 +401,6 @@ class Client implements ClientContract
      * message = apikey + '&' + nonce + uri [+ ? + requestBody]
      *
      * signature = lower_case(hex(hmac_sha512(message.getBytes(‘UTF-8’), secret_key.getBytes(‘UTF-8’) )))
-     *
-     * @return string
      */
     protected function generateSign(string $uri, array $parameters = []): string
     {
@@ -402,16 +413,14 @@ class Client implements ClientContract
 
         $message = $this->key.'&'.$this->nonce.$fullUri;
 
-        return strtolower(hash_hmac('sha512', utf8_encode($message), utf8_encode($this->secret)));
+        return strtolower(hash_hmac('sha512', utf8_encode($message), utf8_encode($this->message_secret)));
     }
 
     /**
      * Generate a 64 bit nonce using a timestamp at microsecond resolution
      * string functions are used to avoid problems on 32 bit systems.
-     *
-     * @return string
      */
-    protected function generateNonce(): string
+    public function generateNonce(): string
     {
         $nonce = explode(' ', microtime());
         $this->nonce = $nonce[1].str_pad(substr($nonce[0], 2, 6), 6, '0');
@@ -423,8 +432,6 @@ class Client implements ClientContract
      * Decode json response from Globitex API.
      *
      * @param $response
-     *
-     * @return array
      */
     protected function decodeResult($response): array
     {

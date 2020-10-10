@@ -6,6 +6,7 @@ use bitbuyAT\Globitex\Client;
 use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransaction;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
+use bitbuyAT\Globitex\Objects\NewOrderParameters;
 use bitbuyAT\Globitex\Objects\Transaction;
 use bitbuyAT\Globitex\Objects\TransactionsCollection;
 use GuzzleHttp\Client as HttpClient;
@@ -56,6 +57,65 @@ class PrivateClientTest extends TestCase
         $this->assertArrayHasKey('currency', $data);
         $this->assertArrayHasKey('available', $data);
         $this->assertArrayHasKey('reserved', $data);
+    }
+
+    public function test_place_new_invalid_order(): void
+    {
+        $accountBalances = $this->globitexService->getAccountBalance();
+        $firstAccount = $accountBalances->first();
+
+        $newOrderParameters = new NewOrderParameters(
+            [
+                'clientOrderId' => 'test_'.$this->globitexService->generateNonce(),
+                'account' => $firstAccount->accountNumber(),
+                'symbol' => 'BTCEUR',
+                'side' => 'buy',
+                'price' => '1',
+                'quantity' => '0.0005',
+            ]
+        );
+        $this->expectException(GlobitexApiErrorException::class);
+        $this->expectExceptionMessage('Order size less than minimum');
+        $executionReport = $this->globitexService->placeNewOrder($newOrderParameters);
+    }
+
+    public function test_place_new_order(): void
+    {
+        $accountBalances = $this->globitexService->getAccountBalance();
+        $firstAccount = $accountBalances->first();
+
+        $newOrderParameters = new NewOrderParameters(
+            [
+                'clientOrderId' => 'test_'.$this->globitexService->generateNonce(),
+                'account' => $firstAccount->accountNumber(),
+                'symbol' => 'BTCEUR',
+                'side' => 'buy',
+                'price' => '1.00',
+                'quantity' => '1.0000000',
+            ]
+        );
+
+        $executionReport = $this->globitexService->placeNewOrder($newOrderParameters);
+        $data = $executionReport->getData();
+        $this->assertEquals($executionReport->orderStatus(), 'new');
+        $this->assertArrayHasKey('orderId', $data);
+        $this->assertEquals($executionReport->clientOrderId(), $newOrderParameters->getClientOrderId());
+        $this->assertEquals($executionReport->symbol(), $newOrderParameters->getSymbol());
+        $this->assertEquals($executionReport->side(), $newOrderParameters->getSide());
+        $this->assertEquals($executionReport->price(), $newOrderParameters->getPrice());
+        $this->assertEquals($executionReport->quantity(), $newOrderParameters->getQuantity());
+        $this->assertEquals($executionReport->type(), 'limit');
+        $this->assertEquals($executionReport->timeInForce(), 'GTC');
+        $this->assertArrayHasKey('lastQuantity', $data);
+        $this->assertArrayHasKey('lastPrice', $data);
+        $this->assertArrayHasKey('leavesQuantity', $data);
+        $this->assertArrayHasKey('cumQuantity', $data);
+        $this->assertArrayHasKey('averagePrice', $data);
+        $this->assertArrayHasKey('created', $data);
+        $this->assertArrayHasKey('execReportType', $data);
+        $this->assertArrayHasKey('timestamp', $data);
+        $this->assertEquals($executionReport->account(), $newOrderParameters->getAccount());
+        $this->assertEquals($executionReport->orderSource(), 'REST');
     }
 
     public function test_get_crypto_transaction_fee(): void
