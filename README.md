@@ -78,6 +78,9 @@ All currently supported methods with params explanation can be found in the clie
 - [Get Symbols](https://globitex.com/api/#restGetSymbols): `Globitex::getAssetPairs(): PairsCollection`
 - [Get Order Book For Symbol](https://globitex.com/api/#restGetOrderBook): `Globitex::getOrderBook(string $pair): OrderBook`
 
+#### Trading methods (private)
+- [Place New Order](https://globitex.com/api/#PlaceNewOrder): `Globitex::placeNewOrder(NewOrderParameters $newOrderParams): ExecutionReport`
+
 #### Payment Data methods (private)
 
 - [Get Balance](https://globitex.com/api/#GetBalance): `Globitex::getAccountBalance(): AccountsCollection`
