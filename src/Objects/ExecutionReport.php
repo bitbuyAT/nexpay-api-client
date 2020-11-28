@@ -16,10 +16,8 @@ class ExecutionReport
 
     /**
      * Get Order ID.
-     *
-     * @return int
      */
-    public function orderId(): Integer
+    public function orderId(): int
     {
         return $this->data['orderId'];
     }

@@ -72,6 +72,36 @@ interface Client
     public function placeNewOrder(NewOrderParameters $newOrderParams): ExecutionReport;
 
     /**
+     * Cancel an Order.
+     * Returns an ExecutionReport that represent a status of the order.
+     *
+     * @param NewOrderParameters
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function cancelOrder(string $clientOrderId, string $account): ExecutionReport;
+
+    /**
+     * Cancel all Orders.
+     * Returns an ExecutionReport that represent a status of the order.
+     *
+     * @param NewOrderParameters
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function cancelAllOrders(array $params = []): ExecutionReportsCollection;
+
+    /**
+     * Get My Trades
+     * Returns the trading history - a collection of client's trades (MyTrade objects).
+     *
+     * @param GetMyTradesParameters
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getMyTrades(GetMyTradesParameters $getMyTradesParams): MyTradesCollection;
+
+    /**
      * Get account balance.
      *
      * @return AccountsCollection|Account[]

@@ -4,11 +4,15 @@ namespace bitbuyAT\Globitex\Tests;
 
 use bitbuyAT\Globitex\Client;
 use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
+use bitbuyAT\Globitex\Objects\ExecutionReportsCollection;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransaction;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
+use bitbuyAT\Globitex\Objects\GetMyTradesParameters;
+use bitbuyAT\Globitex\Objects\MyTradesCollection;
 use bitbuyAT\Globitex\Objects\NewOrderParameters;
 use bitbuyAT\Globitex\Objects\Transaction;
 use bitbuyAT\Globitex\Objects\TransactionsCollection;
+use Carbon\Carbon;
 use GuzzleHttp\Client as HttpClient;
 use PHPUnit\Framework\TestCase;
 
@@ -59,6 +63,51 @@ class PrivateClientTest extends TestCase
         $this->assertArrayHasKey('reserved', $data);
     }
 
+    public function test_get_non_of_my_trades(): void
+    {
+        $accountBalances = $this->globitexService->getAccountBalance();
+        $firstAccount = $accountBalances->first();
+        $getMyTradesParams = new GetMyTradesParameters(
+            [
+                'account' => $firstAccount->accountNumber(),
+                'maxResults' => 1,
+                'from' => (int) Carbon::now()->getPreciseTimestamp(3), // this should result in no trades
+            ]
+        );
+        $myTrades = $this->globitexService->getMyTrades($getMyTradesParams);
+        $this->assertInstanceOf(MyTradesCollection::class, $myTrades);
+        $this->assertEquals($myTrades->count(), 0);
+    }
+
+    public function test_get_my_first_trade(): void
+    {
+        $accountBalances = $this->globitexService->getAccountBalance();
+        $firstAccount = $accountBalances->first();
+        $getMyTradesParams = new GetMyTradesParameters(
+            [
+                'account' => $firstAccount->accountNumber(),
+                'maxResults' => 1,
+            ]
+        );
+        $myTrades = $this->globitexService->getMyTrades($getMyTradesParams);
+        $this->assertInstanceOf(MyTradesCollection::class, $myTrades);
+
+        if ($myTrades->count() === 1) {
+            $myTrade = $myTrades->first();
+            $myTradeData = $myTrade->getData();
+            $this->assertEquals($myTrade->account(), $getMyTradesParams->account());
+            $this->assertArrayHasKey('tradeId', $myTradeData);
+            $this->assertArrayHasKey('symbol', $myTradeData);
+            $this->assertArrayHasKey('side', $myTradeData);
+            $this->assertArrayHasKey('originalOrderId', $myTradeData);
+            $this->assertArrayHasKey('execQuantity', $myTradeData);
+            $this->assertArrayHasKey('timestamp', $myTradeData);
+            $this->assertArrayHasKey('isLiqProvided', $myTradeData);
+        } else {
+            $this->assertEquals($myTrades->count(), 0);
+        }
+    }
+
     public function test_place_new_invalid_order(): void
     {
         $accountBalances = $this->globitexService->getAccountBalance();
@@ -79,7 +128,7 @@ class PrivateClientTest extends TestCase
         $executionReport = $this->globitexService->placeNewOrder($newOrderParameters);
     }
 
-    public function test_place_new_order(): void
+    public function test_place_new_order_and_cancel_it(): void
     {
         $accountBalances = $this->globitexService->getAccountBalance();
         $firstAccount = $accountBalances->first();
@@ -116,6 +165,35 @@ class PrivateClientTest extends TestCase
         $this->assertArrayHasKey('timestamp', $data);
         $this->assertEquals($executionReport->account(), $newOrderParameters->getAccount());
         $this->assertEquals($executionReport->orderSource(), 'REST');
+        $cancellationReport = $this->globitexService->cancelOrder(
+            $executionReport->clientOrderId(),
+            $executionReport->account()
+        );
+        $this->assertEquals($cancellationReport->orderId(), $executionReport->orderId());
+        $this->assertEquals($cancellationReport->execReportType(), 'canceled');
+        $this->assertEquals($cancellationReport->orderStatus(), 'canceled');
+        $this->assertEquals($cancellationReport->symbol(), $executionReport->symbol());
+        $this->assertArrayHasKey('lastQuantity', $data);
+        $this->assertArrayHasKey('lastPrice', $data);
+        $this->assertArrayHasKey('leavesQuantity', $data);
+        $this->assertArrayHasKey('cumQuantity', $data);
+        $this->assertArrayHasKey('averagePrice', $data);
+        $this->assertArrayHasKey('timestamp', $data);
+    }
+
+    public function test_cancel_all_orders(): void
+    {
+        $accountBalances = $this->globitexService->getAccountBalance();
+        $firstAccount = $accountBalances->first();
+
+        $executionReports = $this->globitexService->cancelAllOrders([
+            'account' => $firstAccount->accountNumber(),
+        ]);
+        $this->assertInstanceOf(ExecutionReportsCollection::class, $executionReports);
+        $executionReports = $this->globitexService->cancelAllOrders([
+            'account' => $firstAccount->accountNumber(),
+        ]);
+        $this->assertEquals($executionReports->count(), 0);
     }
 
     public function test_get_crypto_transaction_fee(): void

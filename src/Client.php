@@ -11,8 +11,12 @@ use bitbuyAT\Globitex\Objects\EuroAccount;
 use bitbuyAT\Globitex\Objects\EuroAccountsCollection;
 use bitbuyAT\Globitex\Objects\EuroPaymentHistory;
 use bitbuyAT\Globitex\Objects\ExecutionReport;
+use bitbuyAT\Globitex\Objects\ExecutionReportsCollection;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransaction;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
+use bitbuyAT\Globitex\Objects\GetMyTradesParameters;
+use bitbuyAT\Globitex\Objects\MyTrade;
+use bitbuyAT\Globitex\Objects\MyTradesCollection;
 use bitbuyAT\Globitex\Objects\NewOrderParameters;
 use bitbuyAT\Globitex\Objects\OrderBook;
 use bitbuyAT\Globitex\Objects\Pair;
@@ -27,7 +31,6 @@ use GuzzleHttp\ClientInterface as HttpClient;
 class Client implements ClientContract
 {
     const API_URL = 'https://api.globitex.com';
-    const API_VERSION = '1';
 
     /**
      * API key.
@@ -144,7 +147,7 @@ class Client implements ClientContract
 
     /**
      * Place New Order.
-     * Returns a JSON object ExecutionReport that represent a status of the order.
+     * Returns an ExecutionReport that represent a status of the order.
      *
      * @param NewOrderParameters
      *
@@ -155,6 +158,58 @@ class Client implements ClientContract
         $result = $this->privateRequest('trading/new_order', $newOrderParams->getParameters(), 'post');
 
         return new ExecutionReport($result['ExecutionReport']);
+    }
+
+    /**
+     * Cancel an Order.
+     * Returns an ExecutionReport that represent a status of the order.
+     *
+     * @param NewOrderParameters
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function cancelOrder(string $clientOrderId, string $account): ExecutionReport
+    {
+        $result = $this->privateRequest('trading/cancel_order', [
+            'clientOrderId' => $clientOrderId,
+            'account' => $account,
+            ], 'post', 2);
+
+        return new ExecutionReport($result['ExecutionReport']);
+    }
+
+    /**
+     * Cancel all Orders.
+     * Returns an ExecutionReport that represent a status of the order.
+     *
+     * @param NewOrderParameters
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function cancelAllOrders(array $params = []): ExecutionReportsCollection
+    {
+        $result = $this->privateRequest('trading/cancel_orders', $params, 'post');
+
+        return (new ExecutionReportsCollection($result['ExecutionReport']))->map(function ($data) {
+            return new ExecutionReport($data);
+        });
+    }
+
+    /**
+     * Get My Trades
+     * Returns the trading history - a collection of client's trades (MyTrade objects).
+     *
+     * @param GetMyTradesParameters
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function getMyTrades(GetMyTradesParameters $getMyTradesParams): MyTradesCollection
+    {
+        $result = $this->privateRequest('trading/trades', $getMyTradesParams->getParameters(), 'get');
+
+        return (new MyTradesCollection($result['trades']))->map(function ($data) {
+            return new MyTrade($data);
+        });
     }
 
     /**
@@ -196,10 +251,13 @@ class Client implements ClientContract
 
     /**
      * Get Cryptocurrency Deposit Address.
-     * Returns the previously created incoming cryptocurrency address that can be used to deposit cryptocurrency to your account.
+     * Returns the previously created incoming cryptocurrency address
+     * that can be used to deposit cryptocurrency to your account.
      *
      * @param string $currency Currency code e.g. BTC, for the cryptocurrency address
-     * @param string $amount   Account number the funds will be deposited on. If not provided the cryptocurrency deposit address for the default account will be provided (sample value: XAZ123A91)
+     * @param string $account  Account number the funds will be deposited on.
+     *                         If not provided the cryptocurrency deposit address for the
+     *                         default account will be provided (sample value: XAZ123A91)
      *
      * @return string $address Cryptocurrency deposit address
      *
@@ -274,9 +332,12 @@ class Client implements ClientContract
     /**
      * Returns default (single) or all account status information.
      *
-     * @param string $fromDate Date from to display account history. String in ISO 8601 format of yyyy-MM-dd, e.g. "2000-10-31"
-     * @param string $toDate   End date of account history to use in search criteria. String in ISO 8601 format of yyyy-MM-dd, e.g. "2000-10-31"
-     * @param string $account  Account IBAN number to use in search criteria. If not provided then default account number will be used
+     * @param string $fromDate Date from to display account history.
+     *                         String in ISO 8601 format of yyyy-MM-dd, e.g. "2000-10-31"
+     * @param string $toDate   End date of account history to use in search criteria.
+     *                         String in ISO 8601 format of yyyy-MM-dd, e.g. "2000-10-31"
+     * @param string $account  Account IBAN number to use in search criteria.
+     *                         If not provided then default account number will be used
      *
      * @return EuroAccountsCollection|EuroAccount[]
      *
@@ -334,22 +395,26 @@ class Client implements ClientContract
      *
      * @throws GlobitexApiErrorException
      */
-    public function privateRequest(string $method, array $parameters = [], string $httpMethod = 'post'): array
-    {
+    public function privateRequest(
+        string $method,
+        array $parameters = [],
+        string $httpMethod = 'post',
+        string $apiVersion = '1'
+    ): array {
         $headers = ['User-Agent' => 'Globitex PHP API Agent'];
 
         $headers['X-Nonce'] = $this->generateNonce();
         $headers['X-API-Key'] = $this->key;
-        $headers['X-Signature'] = $this->generateSign($method, $parameters);
+        $headers['X-Signature'] = $this->generateSign($method, $parameters, $apiVersion);
 
         try {
             if ($httpMethod === 'post') {
-                $response = $this->client->post($this->buildUrl($method), [
+                $response = $this->client->post($this->buildUrl($method, false, $apiVersion), [
                     'headers' => $headers,
                     'form_params' => $parameters,
                 ]);
             } else {
-                $response = $this->client->get($this->buildUrl($method), [
+                $response = $this->client->get($this->buildUrl($method, false, $apiVersion), [
                     'headers' => $headers,
                     'query' => $parameters,
                 ]);
@@ -372,9 +437,9 @@ class Client implements ClientContract
      *
      * @param bool $isPublic=false - indicator whether its a public call
      */
-    protected function buildUrl(string $method, bool $isPublic = false): string
+    protected function buildUrl(string $method, bool $isPublic = false, string $apiVersion = '1'): string
     {
-        return static::API_URL.$this->buildPath($method, $isPublic);
+        return static::API_URL.$this->buildPath($method, $isPublic, $apiVersion);
     }
 
     /**
@@ -382,9 +447,9 @@ class Client implements ClientContract
      *
      * @param bool $isPublic=false - indicator whether its a public call
      */
-    protected function buildPath(string $method, bool $isPublic = false): string
+    protected function buildPath(string $method, bool $isPublic = false, string $apiVersion = '1'): string
     {
-        $basePath = '/api/'.static::API_VERSION;
+        $basePath = '/api/'.$apiVersion;
         // add public string if set
         if ($isPublic) {
             $basePath .= '/public';
@@ -402,9 +467,9 @@ class Client implements ClientContract
      *
      * signature = lower_case(hex(hmac_sha512(message.getBytes(‘UTF-8’), secret_key.getBytes(‘UTF-8’) )))
      */
-    protected function generateSign(string $uri, array $parameters = []): string
+    protected function generateSign(string $uri, array $parameters = [], string $apiVersion = '1'): string
     {
-        $fullUri = $this->buildPath($uri);
+        $fullUri = $this->buildPath($uri, false, $apiVersion);
 
         // add queryString to uri (if parameters set and not empty)
         if (!empty($parameters) && $queryString = http_build_query($parameters, '', '&')) {

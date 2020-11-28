@@ -79,7 +79,11 @@ All currently supported methods with params explanation can be found in the clie
 - [Get Order Book For Symbol](https://globitex.com/api/#restGetOrderBook): `Globitex::getOrderBook(string $pair): OrderBook`
 
 #### Trading methods (private)
+
 - [Place New Order](https://globitex.com/api/#PlaceNewOrder): `Globitex::placeNewOrder(NewOrderParameters $newOrderParams): ExecutionReport`
+- [Cancel Order](https://globitex.com/api/#CancelOrder): `Globitex::cancelOrder(string $clientOrderId, string $account): ExecutionReport`
+- [Cancel All Orders](https://globitex.com/api/#CancelAllOrders): `Globitex::cancelAllOrders(array $params = []): ExecutionReport`
+- [Get My Trades](https://globitex.com/api/#GetMyTrades): `Globitex::getMyTrades(GetMyTradesParameters $getMyTradesParams): MyTradesCollection`
 
 #### Payment Data methods (private)
 
