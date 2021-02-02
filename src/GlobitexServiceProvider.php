@@ -32,8 +32,8 @@ class GlobitexServiceProvider extends ServiceProvider
             return new Client(
                 new HttpClient(),
                 $config['key'] ?? null,
-                $config['outgoing_secret'] ?? null,
                 $config['message_secret'] ?? null,
+                $config['outgoing_secret'] ?? null,
             );
         });
     }
