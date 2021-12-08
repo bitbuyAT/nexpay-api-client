@@ -36,12 +36,12 @@ class PrivateClientTest extends TestCase
         );
     }
 
-    public function test_client_instance_can_be_created(): void
+    public function testClientInstanceCanBeCreated(): void
     {
         $this->assertInstanceOf(Client::class, $this->globitexService);
     }
 
-    public function test_get_first_account(): void
+    public function testGetFirstAccount(): void
     {
         $accountBalances = $this->globitexService->getAccountBalance();
         $firstPair = $accountBalances->first();
@@ -51,7 +51,7 @@ class PrivateClientTest extends TestCase
         $this->assertArrayHasKey('balance', $data);
     }
 
-    public function test_get_balance_of_first_account(): void
+    public function testGetBalanceOfFirstAccount(): void
     {
         $accountBalances = $this->globitexService->getAccountBalance();
         $firstPair = $accountBalances->first();
@@ -63,7 +63,7 @@ class PrivateClientTest extends TestCase
         $this->assertArrayHasKey('reserved', $data);
     }
 
-    public function test_get_non_of_my_trades(): void
+    public function testGetNonOfMyTrades(): void
     {
         $accountBalances = $this->globitexService->getAccountBalance();
         $firstAccount = $accountBalances->first();
@@ -79,7 +79,7 @@ class PrivateClientTest extends TestCase
         $this->assertEquals($myTrades->count(), 0);
     }
 
-    public function test_get_my_first_trade(): void
+    public function testGetMyFirstTrade(): void
     {
         $accountBalances = $this->globitexService->getAccountBalance();
         $firstAccount = $accountBalances->first();
@@ -108,7 +108,7 @@ class PrivateClientTest extends TestCase
         }
     }
 
-    public function test_place_new_invalid_order(): void
+    public function testPlaceNewInvalidOrder(): void
     {
         $accountBalances = $this->globitexService->getAccountBalance();
         $firstAccount = $accountBalances->first();
@@ -120,7 +120,7 @@ class PrivateClientTest extends TestCase
                 'symbol' => 'BTCEUR',
                 'side' => 'buy',
                 'price' => '1',
-                'quantity' => '0.0005',
+                'quantity' => '0.0000001',
             ]
         );
         $this->expectException(GlobitexApiErrorException::class);
@@ -128,7 +128,7 @@ class PrivateClientTest extends TestCase
         $executionReport = $this->globitexService->placeNewOrder($newOrderParameters);
     }
 
-    public function test_place_new_order_and_cancel_it(): void
+    public function testPlaceNewOrderAndCancelIt(): void
     {
         $accountBalances = $this->globitexService->getAccountBalance();
         $firstAccount = $accountBalances->first();
@@ -181,7 +181,7 @@ class PrivateClientTest extends TestCase
         $this->assertArrayHasKey('timestamp', $data);
     }
 
-    public function test_cancel_all_orders(): void
+    public function testCancelAllOrders(): void
     {
         $accountBalances = $this->globitexService->getAccountBalance();
         $firstAccount = $accountBalances->first();
@@ -196,7 +196,7 @@ class PrivateClientTest extends TestCase
         $this->assertEquals($executionReports->count(), 0);
     }
 
-    public function test_get_crypto_transaction_fee(): void
+    public function testGetCryptoTransactionFee(): void
     {
         $accountBalances = $this->globitexService->getAccountBalance();
         $firstPair = $accountBalances->first();
@@ -220,13 +220,13 @@ class PrivateClientTest extends TestCase
         }
     }
 
-    public function test_get_crypto_currency_deposit_address_for_btc_should_work(): void
+    public function testGetCryptoCurrencyDepositAddressForBtcShouldWork(): void
     {
         $address = $this->globitexService->getCryptoCurrencyDepositAddress('BTC');
         $this->assertNotNull($address);
     }
 
-    public function test_get_transactions(): void
+    public function testGetTransactions(): void
     {
         $userTransactions = $this->globitexService->getTransactions();
         $firstTransaction = $userTransactions->first();
@@ -252,7 +252,7 @@ class PrivateClientTest extends TestCase
         }
     }
 
-    public function test_get_gbx_utilization_transactions(): void
+    public function testGetGbxUtilizationTransactions(): void
     {
         $gbxUtilizationTransactions = $this->globitexService->getGBXUtilizationTransactions();
         $firstTransaction = $gbxUtilizationTransactions->first();
@@ -276,7 +276,7 @@ class PrivateClientTest extends TestCase
         }
     }
 
-    public function test_get_euro_account_status(): void
+    public function testGetEuroAccountStatus(): void
     {
         $euroAccountBalances = $this->globitexService->getEuroAccountStatus();
         $firstPair = $euroAccountBalances->first();
@@ -286,7 +286,7 @@ class PrivateClientTest extends TestCase
         $this->assertArrayHasKey('balance', $data);
     }
 
-    public function test_get_euro_payment_history(): void
+    public function testGetEuroPaymentHistory(): void
     {
         $euroPaymentHistory = $this->globitexService->getEuroPaymentHistory();
         $data = $euroPaymentHistory->getData();
