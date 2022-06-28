@@ -119,7 +119,7 @@ We are constantly updating and improving our code. We hope it can be for the ben
 
 # Who are we?
 
-This package is maintained by bitbuy.at (bitbuy GmbH), a Vienna based Bitcoin Store offering fast and cheap in-person fiat <> crypto trades. Feel free to visit our website for more info, if you're based in Vienna and looking to [buy Bitcoin for cash](https://bitbuy.at/buy/bitcoin/). You can also [sell your Bitcoin for cash](https://bitbuy.at/sell/bitcoin/) in our store.
+This package is maintained by bitbuy GmbH. We develop crypto and blockchain related software and operate a Vienna-based Bitcoin Store (bitcoin.wien). Feel free to visit our website for more info, if you're based in Vienna and looking to [buy Bitcoin for cash](https://www.bitcoin.wien/buy/bitcoin/). You can also [sell your Bitcoin for cash](https://www.bitcoin.wien/sell/bitcoin/) in our store.
 
 # License
 
