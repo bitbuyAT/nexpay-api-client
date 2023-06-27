@@ -53,51 +53,51 @@ class GetMyTradesParameters
 
     public function setBy(string $value)
     {
-        $this->parameters['by'] = $value;
+        $this->params['by'] = $value;
     }
 
     public function setStartIndex(int $value)
     {
-        $this->parameters['startIndex'] = $value;
+        $this->params['startIndex'] = $value;
     }
 
     public function setMaxResults(int $value)
     {
-        $this->parameters['maxResults'] = $value;
+        $this->params['maxResults'] = $value;
     }
 
     public function setSymbols(string $value)
     {
-        $this->parameters['symbols'] = $value;
+        $this->params['symbols'] = $value;
     }
 
     public function setAccount(string $value)
     {
-        $this->parameters['account'] = $value;
+        $this->params['account'] = $value;
     }
 
     public function account(): string
     {
-        return $this->parameters['account'];
+        return $this->params['account'];
     }
 
     public function setSort(string $value)
     {
-        $this->parameters['sort'] = $value;
+        $this->params['sort'] = $value;
     }
 
     public function setFrom(int $value)
     {
-        $this->parameters['from'] = $value;
+        $this->params['from'] = $value;
     }
 
     public function setTill(int $value)
     {
-        $this->parameters['till'] = $value;
+        $this->params['till'] = $value;
     }
 
     public function getParameters(): array
     {
-        return $this->parameters;
+        return $this->params;
     }
 }

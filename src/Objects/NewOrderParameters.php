@@ -32,9 +32,9 @@ class NewOrderParameters
         $this->setAccount($parameters['account']);
         $this->setSymbol($parameters['symbol']);
         $this->setSide($parameters['side']);
-        if (!array_key_exists('type', $parameters) ||
-            $parameters['type'] === 'limit' ||
-            $parameters['type'] === 'stopLimit'
+        if (!array_key_exists('type', $parameters)
+            || $parameters['type'] === 'limit'
+            || $parameters['type'] === 'stopLimit'
         ) {
             $this->setPrice($parameters['price']);
         }
@@ -44,8 +44,8 @@ class NewOrderParameters
         if (array_key_exists('timeInForce', $parameters) && $parameters['timeInForce'] === 'GTD') {
             $this->setExpireTime($parameters['expireTime']);
         }
-        if (array_key_exists('type', $parameters) &&
-            ($parameters['type'] === 'stop' || $parameters['type'] === 'stopLimit')
+        if (array_key_exists('type', $parameters)
+            && ($parameters['type'] === 'stop' || $parameters['type'] === 'stopLimit')
         ) {
             $this->setStopPrice($parameters['stopPrice']);
         }
@@ -190,7 +190,7 @@ class NewOrderParameters
     /**
      * Get expireTime.
      */
-    public function getExpireTime(): integer
+    public function getExpireTime(): int
     {
         return $this->parameters['expireTime'];
     }

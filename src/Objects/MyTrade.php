@@ -109,7 +109,7 @@ class MyTrade
      * If true then client order was liquidity provider (maker) if false then liquidity taker
      * boolean.
      */
-    public function isLiqProvided(): boolean
+    public function isLiqProvided(): bool
     {
         return $this->data['isLiqProvided'];
     }

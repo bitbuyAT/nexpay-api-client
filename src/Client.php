@@ -30,7 +30,7 @@ use GuzzleHttp\ClientInterface as HttpClient;
 
 class Client implements ClientContract
 {
-    const API_URL = 'https://api.globitex.com';
+    public const API_URL = 'https://api.globitex.com';
 
     /**
      * API key.
@@ -56,6 +56,11 @@ class Client implements ClientContract
      * @var HttpClient
      */
     protected $client;
+
+    /**
+     * @var Nonce
+     */
+    protected $nonce;
 
     /**
      * @param string $key             API key
@@ -263,7 +268,7 @@ class Client implements ClientContract
      *
      * @throws GlobitexApiErrorException
      */
-    public function getCryptoCurrencyDepositAddress(string $currency, ?string $account = null): string
+    public function getCryptoCurrencyDepositAddress(string $currency, string $account = null): string
     {
         $result = $this->privateRequest('payment/deposit/crypto/address', [
             'currency' => $currency,
@@ -276,9 +281,6 @@ class Client implements ClientContract
     /**
      * Get transactions.
      * Returns a list of payment transactions and their status (array of transactions).
-     *
-     * @param array $params=[] Optional Parameters
-     *                         Params can be found under https://globitex.com/api/#GetTransactionList
      *
      * @return TransactionsCollection|Transaction[]
      *
@@ -296,9 +298,6 @@ class Client implements ClientContract
     /**
      * Get GBX (Globitex Token) Utilization List.
      * Returns a list of GBX utilization transactions (array of transactions).
-     *
-     * @param array $params=[] - Optional Parameters
-     *                         Params can be found under https://globitex.com/api/#GbxUtilizationList
      *
      * @return GBXUtilizationTransactionsCollection|GBXUtilizationTransaction[]
      *
@@ -389,9 +388,8 @@ class Client implements ClientContract
     /**
      * Make private request request.
      *
-     * @param string $method            api method
-     * @param array  $parameters        query parameters
-     * @param string $httpMethod='post' http method
+     * @param string $method     api method
+     * @param array  $parameters query parameters
      *
      * @throws GlobitexApiErrorException
      */
@@ -434,8 +432,6 @@ class Client implements ClientContract
 
     /**
      * Build url.
-     *
-     * @param bool $isPublic=false - indicator whether its a public call
      */
     protected function buildUrl(string $method, bool $isPublic = false, string $apiVersion = '1'): string
     {
@@ -444,8 +440,6 @@ class Client implements ClientContract
 
     /**
      * Build path.
-     *
-     * @param bool $isPublic=false - indicator whether its a public call
      */
     protected function buildPath(string $method, bool $isPublic = false, string $apiVersion = '1'): string
     {
@@ -477,8 +471,9 @@ class Client implements ClientContract
         }
 
         $message = $this->key.'&'.$this->nonce.$fullUri;
+        $encoded_message = mb_convert_encoding($message, 'UTF-8', 'ISO-8859-1');
 
-        return strtolower(hash_hmac('sha512', utf8_encode($message), utf8_encode($this->message_secret)));
+        return strtolower(hash_hmac('sha512', $encoded_message, $this->message_secret));
     }
 
     /**
@@ -495,8 +490,6 @@ class Client implements ClientContract
 
     /**
      * Decode json response from Globitex API.
-     *
-     * @param $response
      */
     protected function decodeResult($response): array
     {

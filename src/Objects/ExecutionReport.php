@@ -102,10 +102,8 @@ class ExecutionReport
      * Get Expire Time.
      *
      * UTC timestamp in milliseconds
-     *
-     * @return int
      */
-    public function expireTime(): integer
+    public function expireTime(): int
     {
         return $this->data['expireTime'];
     }
@@ -185,10 +183,8 @@ class ExecutionReport
      * Get Creation Date.
      *
      * UTC timestamp when order request was received on server side. In milliseconds
-     *
-     * @return int
      */
-    public function created(): integer
+    public function created(): int
     {
         return $this->data['created'];
     }
@@ -207,7 +203,7 @@ class ExecutionReport
 
     /**
      * Get Reason for Order Rejection.
-    /**
+     * /**
      * Get Timestamp.
      *
      * UTC timestamp of order placement. In milliseconds
