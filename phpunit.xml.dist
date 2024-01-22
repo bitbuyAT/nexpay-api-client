@@ -19,5 +19,6 @@
         <env name="GLOBITEX_KEY" value="key"/>
         <env name="GLOBITEX_MESSAGE_SECRET" value="message_secret"/>
         <env name="GLOBITEX_OUTGOING_SECRET" value="outgoing_secret"/>
+        <env name="GLOBITEX_ACCOUNT" value="your_iban"/>
     </php>
 </phpunit>

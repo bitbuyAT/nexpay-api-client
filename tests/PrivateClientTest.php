@@ -4,6 +4,7 @@ namespace bitbuyAT\Globitex\Tests;
 
 use bitbuyAT\Globitex\Client;
 use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
+use bitbuyAT\Globitex\Objects\EuroPaymentParameters;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransaction;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
 use bitbuyAT\Globitex\Objects\Transaction;
@@ -153,5 +154,23 @@ class PrivateClientTest extends TestCase
         $this->assertArrayHasKey('clientName', $data);
         $this->assertArrayHasKey('account', $data);
         $this->assertArrayHasKey('entries', $data);
+    }
+
+    public function testMakeEuroPayment(): void
+    {
+        $iban = getenv('GLOBITEX_ACCOUNT');
+
+        $paymentParameters = new EuroPaymentParameters([
+            'account' => $iban,
+            'amount' => '1',
+            'beneficiaryName' => 'Self',
+            'beneficiaryAccount' => $iban,
+            'beneficiaryReference' => 'Test',
+            'useGbxForFee' => true,
+            ]);
+
+        $this->expectException(GlobitexApiErrorException::class);
+        $this->expectExceptionMessage('Debtor and Creditor account number cannot be the same');
+        $this->globitexService->makeEuroPayment($paymentParameters);
     }
 }

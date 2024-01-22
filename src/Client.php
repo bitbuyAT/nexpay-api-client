@@ -10,6 +10,7 @@ use bitbuyAT\Globitex\Objects\CryptoTransactionFee;
 use bitbuyAT\Globitex\Objects\EuroAccount;
 use bitbuyAT\Globitex\Objects\EuroAccountsCollection;
 use bitbuyAT\Globitex\Objects\EuroPaymentHistory;
+use bitbuyAT\Globitex\Objects\EuroPaymentParameters;
 use bitbuyAT\Globitex\Objects\ExecutionReport;
 use bitbuyAT\Globitex\Objects\ExecutionReportsCollection;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransaction;
@@ -26,6 +27,7 @@ use bitbuyAT\Globitex\Objects\Trade;
 use bitbuyAT\Globitex\Objects\TradesCollection;
 use bitbuyAT\Globitex\Objects\Transaction;
 use bitbuyAT\Globitex\Objects\TransactionsCollection;
+use Carbon\Carbon;
 use GuzzleHttp\ClientInterface as HttpClient;
 
 class Client implements ClientContract
@@ -354,6 +356,27 @@ class Client implements ClientContract
     }
 
     /**
+     * Returns default (single) or all account status information.
+     *
+     * @param string $account Account IBAN number to use in search criteria.
+     *                        If not provided then default account number will be used
+     *
+     * @return EuroAccountsCollection|EuroAccount[]
+     *
+     * @throws GlobitexApiErrorException
+     */
+    public function makeEuroPayment(EuroPaymentParameters $euroPaymentParameters, string $account = null)
+    {
+        $parameters = $euroPaymentParameters->getParameters();
+        $parameters['transactionSignature'] = $this->generateTransactionSignature($euroPaymentParameters);
+        $parameters['requestTime'] = (new Carbon())->getTimestampMs();
+
+        $result = $this->privateRequest('eurowallet/payments', $parameters, 'post');
+
+        return new $result();
+    }
+
+    /**
      * Make public request request
      * Currently only get request.
      *
@@ -474,6 +497,23 @@ class Client implements ClientContract
         $encoded_message = mb_convert_encoding($message, 'UTF-8', 'ISO-8859-1');
 
         return strtolower(hash_hmac('sha512', $encoded_message, $this->message_secret));
+    }
+
+    /**
+     * Generate Transaction Signature.
+     *
+     * uri = path [+ '?' + query]
+     *
+     * message = "requestTime=" + requestTime + "&account=" + account + "&amount=" + amount + "&beneficiaryName=" + beneficiaryName + "&beneficiaryAddress=" + beneficiaryAddress + "&beneficiaryAccount=" + beneficiaryAccount + "&beneficiaryReference=" + beneficiaryReference + "&externalPaymentId=" + externalPaymentId
+     *
+     * transactionSignature = lower_case(hex(hmac_sha512(message.getBytes("UTF-8"), secret_key)))
+     */
+    protected function generateTransactionSignature(EuroPaymentParameters $parameters): string
+    {
+        $message = http_build_query($parameters, '', '&');
+        $encoded_message = mb_convert_encoding($message, 'UTF-8', 'ISO-8859-1');
+
+        return strtolower(hash_hmac('sha512', $encoded_message, $this->outgoing_secret));
     }
 
     /**
