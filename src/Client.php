@@ -11,6 +11,7 @@ use bitbuyAT\Globitex\Objects\EuroAccount;
 use bitbuyAT\Globitex\Objects\EuroAccountsCollection;
 use bitbuyAT\Globitex\Objects\EuroPaymentHistory;
 use bitbuyAT\Globitex\Objects\EuroPaymentParameters;
+use bitbuyAT\Globitex\Objects\EuroPaymentStatus;
 use bitbuyAT\Globitex\Objects\ExecutionReport;
 use bitbuyAT\Globitex\Objects\ExecutionReportsCollection;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransaction;
@@ -358,22 +359,32 @@ class Client implements ClientContract
     /**
      * Returns default (single) or all account status information.
      *
-     * @param string $account Account IBAN number to use in search criteria.
-     *                        If not provided then default account number will be used
-     *
-     * @return EuroAccountsCollection|EuroAccount[]
+     * @param EuroPaymentParameters $euroPaymentParameters All Parameters for the transaction
+     * @param string                $transactionSignature  External transaction signature
      *
      * @throws GlobitexApiErrorException
      */
-    public function makeEuroPayment(EuroPaymentParameters $euroPaymentParameters, string $account = null)
-    {
+    public function makeEuroPayment(
+        EuroPaymentParameters $euroPaymentParameters,
+        string $transactionSignature = null,
+    ) {
+        if ($euroPaymentParameters->getRequestTime() === null) {
+            $euroPaymentParameters->setRequestTime((new Carbon())->getTimestampMs());
+        }
+
+        if ($euroPaymentParameters->getTransactionSignature() === null) {
+            if ($transactionSignature) {
+                $euroPaymentParameters->setTransactionSignature($transactionSignature);
+            } else { // If no signatures were passed
+                $euroPaymentParameters->generateTransactionSignature($this->outgoing_secret);
+            }
+        }
+
         $parameters = $euroPaymentParameters->getParameters();
-        $parameters['transactionSignature'] = $this->generateTransactionSignature($euroPaymentParameters);
-        $parameters['requestTime'] = (new Carbon())->getTimestampMs();
 
-        $result = $this->privateRequest('eurowallet/payments', $parameters, 'post');
+        $result = $this->privateRequest('eurowallet/payments', $parameters, 'post', '2');
 
-        return new $result();
+        return new EuroPaymentStatus($result);
     }
 
     /**
@@ -420,7 +431,8 @@ class Client implements ClientContract
         string $method,
         array $parameters = [],
         string $httpMethod = 'post',
-        string $apiVersion = '1'
+        string $apiVersion = '1',
+        string $rawData = null,
     ): array {
         $headers = ['User-Agent' => 'Globitex PHP API Agent'];
 
@@ -489,7 +501,9 @@ class Client implements ClientContract
         $fullUri = $this->buildPath($uri, false, $apiVersion);
 
         // add queryString to uri (if parameters set and not empty)
-        if (!empty($parameters) && $queryString = http_build_query($parameters, '', '&')) {
+        if (!empty($parameters) && $queryString = http_build_query($parameters, '', '&', PHP_QUERY_RFC3986)) {
+            $queryString = urldecode($queryString);
+
             $fullUri .= '?'.$queryString;
         }
 
@@ -497,23 +511,6 @@ class Client implements ClientContract
         $encoded_message = mb_convert_encoding($message, 'UTF-8', 'ISO-8859-1');
 
         return strtolower(hash_hmac('sha512', $encoded_message, $this->message_secret));
-    }
-
-    /**
-     * Generate Transaction Signature.
-     *
-     * uri = path [+ '?' + query]
-     *
-     * message = "requestTime=" + requestTime + "&account=" + account + "&amount=" + amount + "&beneficiaryName=" + beneficiaryName + "&beneficiaryAddress=" + beneficiaryAddress + "&beneficiaryAccount=" + beneficiaryAccount + "&beneficiaryReference=" + beneficiaryReference + "&externalPaymentId=" + externalPaymentId
-     *
-     * transactionSignature = lower_case(hex(hmac_sha512(message.getBytes("UTF-8"), secret_key)))
-     */
-    protected function generateTransactionSignature(EuroPaymentParameters $parameters): string
-    {
-        $message = http_build_query($parameters, '', '&');
-        $encoded_message = mb_convert_encoding($message, 'UTF-8', 'ISO-8859-1');
-
-        return strtolower(hash_hmac('sha512', $encoded_message, $this->outgoing_secret));
     }
 
     /**

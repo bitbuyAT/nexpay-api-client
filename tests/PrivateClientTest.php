@@ -9,6 +9,7 @@ use bitbuyAT\Globitex\Objects\GBXUtilizationTransaction;
 use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
 use bitbuyAT\Globitex\Objects\Transaction;
 use bitbuyAT\Globitex\Objects\TransactionsCollection;
+use Carbon\Carbon;
 use GuzzleHttp\Client as HttpClient;
 use PHPUnit\Framework\TestCase;
 
@@ -37,52 +38,6 @@ class PrivateClientTest extends TestCase
         $this->assertInstanceOf(Client::class, $this->globitexService);
     }
 
-    public function testGetFirstAccount(): void
-    {
-        $accountBalances = $this->globitexService->getAccountBalance();
-        $firstPair = $accountBalances->first();
-        $data = $firstPair->getData();
-        $this->assertArrayHasKey('account', $data);
-        $this->assertArrayHasKey('main', $data);
-        $this->assertArrayHasKey('balance', $data);
-    }
-
-    public function testGetBalanceOfFirstAccount(): void
-    {
-        $accountBalances = $this->globitexService->getAccountBalance();
-        $firstPair = $accountBalances->first();
-        $balances = $firstPair->getBalance();
-        $firstBalance = $balances->first();
-        $data = $firstBalance->getData();
-        $this->assertArrayHasKey('currency', $data);
-        $this->assertArrayHasKey('available', $data);
-        $this->assertArrayHasKey('reserved', $data);
-    }
-
-    public function testGetCryptoTransactionFee(): void
-    {
-        $accountBalances = $this->globitexService->getAccountBalance();
-        $firstPair = $accountBalances->first();
-        $balances = $firstPair->getBalance();
-        $firstBalance = $balances->first();
-        $data = $firstBalance->getData();
-        // only call this method if there is sufficient balance found
-        if ($firstBalance->available() > 0) {
-            $transactionFee = $this->globitexService->getCryptoTransactionFee($firstBalance->currency(), $firstBalance->available(), $firstPair->accountNumber());
-            $data = $transactionFee->getData();
-            $this->assertArrayHasKey('recommended', $data);
-            $this->assertArrayHasKey('minimum', $data);
-            $this->assertArrayHasKey('maximum', $data);
-            $this->assertArrayHasKey('feeId', $data);
-            $this->assertArrayHasKey('feeExpireTime', $data);
-        } else {
-            // otherwise expect exception if there are no funds left
-            $this->expectException(GlobitexApiErrorException::class);
-            $this->expectExceptionMessage('Invalid amount');
-            $transactionFee = $this->globitexService->getCryptoTransactionFee($firstBalance->currency(), $firstBalance->available(), $firstPair->accountNumber());
-        }
-    }
-
     public function testGetTransactions(): void
     {
         $userTransactions = $this->globitexService->getTransactions();
@@ -109,29 +64,29 @@ class PrivateClientTest extends TestCase
         }
     }
 
-    public function testGetGbxUtilizationTransactions(): void
-    {
-        $gbxUtilizationTransactions = $this->globitexService->getGBXUtilizationTransactions();
-        $firstTransaction = $gbxUtilizationTransactions->first();
-        $this->assertInstanceOf(GBXUtilizationTransactionsCollection::class, $gbxUtilizationTransactions);
-        // only do further tests if the user has a transaction
-        if ($firstTransaction) {
-            $data = $firstTransaction->getData();
-            $this->assertInstanceOf(GBXUtilizationTransaction::class, $firstTransaction);
-            $this->assertArrayHasKey('transactionCode', $data);
-            $this->assertArrayHasKey('created', $data);
-            $this->assertArrayHasKey('direction', $data);
-            $this->assertArrayHasKey('amount', $data);
-            $this->assertArrayHasKey('currency', $data);
-            $this->assertArrayHasKey('account', $data);
-            $this->assertArrayHasKey('details', $data);
+    // public function testGetGbxUtilizationTransactions(): void
+    // {
+    //     $gbxUtilizationTransactions = $this->globitexService->getGBXUtilizationTransactions();
+    //     $firstTransaction = $gbxUtilizationTransactions->first();
+    //     $this->assertInstanceOf(GBXUtilizationTransactionsCollection::class, $gbxUtilizationTransactions);
+    //     // only do further tests if the user has a transaction
+    //     if ($firstTransaction) {
+    //         $data = $firstTransaction->getData();
+    //         $this->assertInstanceOf(GBXUtilizationTransaction::class, $firstTransaction);
+    //         $this->assertArrayHasKey('transactionCode', $data);
+    //         $this->assertArrayHasKey('created', $data);
+    //         $this->assertArrayHasKey('direction', $data);
+    //         $this->assertArrayHasKey('amount', $data);
+    //         $this->assertArrayHasKey('currency', $data);
+    //         $this->assertArrayHasKey('account', $data);
+    //         $this->assertArrayHasKey('details', $data);
 
-            // test various methods
-            $this->assertEquals($firstTransaction->transactionCode(), $data['transactionCode']);
-            $this->assertEquals($firstTransaction->created(), $data['created']);
-            $this->assertEquals($firstTransaction->direction(), $data['direction']);
-        }
-    }
+    //         // test various methods
+    //         $this->assertEquals($firstTransaction->transactionCode(), $data['transactionCode']);
+    //         $this->assertEquals($firstTransaction->created(), $data['created']);
+    //         $this->assertEquals($firstTransaction->direction(), $data['direction']);
+    //     }
+    // }
 
     public function testGetEuroAccountStatus(): void
     {
@@ -156,6 +111,29 @@ class PrivateClientTest extends TestCase
         $this->assertArrayHasKey('entries', $data);
     }
 
+    public function testSignatureMessageIsCorrect(): void
+    {
+        $iban = getenv('GLOBITEX_ACCOUNT');
+        $timestampMs = (new Carbon())->getTimestampMs();
+        $paymentParameters = new EuroPaymentParameters([
+            'requestTime' => $timestampMs,
+            'account' => $iban,
+            'amount' => '1',
+            'beneficiaryName' => 'Test Name',
+            'beneficiaryAccount' => $iban,
+            'beneficiaryReference' => 'Test',
+            'externalPaymentId' => 'payTest',
+            'useGbxForFee' => 'true',
+            ]);
+
+        $message = $paymentParameters->getTransactionSignatureMessage();
+
+        $this->assertMatchesRegularExpression(
+            '/^requestTime='.$timestampMs.'&account='.$iban.'&amount=1&beneficiaryName=Test Name&beneficiaryAccount='.$iban.'&beneficiaryReference=Test&useGbxForFee=true&externalPaymentId=payTest$/',
+            $message
+        );
+    }
+
     public function testMakeEuroPayment(): void
     {
         $iban = getenv('GLOBITEX_ACCOUNT');
@@ -163,14 +141,40 @@ class PrivateClientTest extends TestCase
         $paymentParameters = new EuroPaymentParameters([
             'account' => $iban,
             'amount' => '1',
-            'beneficiaryName' => 'Self',
+            'beneficiaryName' => 'John Doe',
+            'beneficiaryAddress' => '123 Test St, 92109 San Diego, CA, USA',
             'beneficiaryAccount' => $iban,
             'beneficiaryReference' => 'Test',
-            'useGbxForFee' => true,
+            'externalPaymentId' => (new Carbon())->getTimestampMs().'-payTest',
+            'useGbxForFee' => 'true',
             ]);
 
         $this->expectException(GlobitexApiErrorException::class);
         $this->expectExceptionMessage('Debtor and Creditor account number cannot be the same');
-        $this->globitexService->makeEuroPayment($paymentParameters);
+        echo $this->globitexService->makeEuroPayment($paymentParameters);
+    }
+
+    public function testMakeEuroPaymentWithExternalSignature(): void
+    {
+        $iban = getenv('GLOBITEX_ACCOUNT');
+        $outgoingSecret = getenv('GLOBITEX_OUTGOING_SECRET');
+        $requestTime = (new Carbon())->getTimestampMs();
+
+        $paymentParameters = new EuroPaymentParameters([
+            'requestTime' => $requestTime,
+            'account' => $iban,
+            'amount' => '1',
+            'beneficiaryName' => 'John Doe',
+            'beneficiaryAddress' => '123 Test St, 92109 San Diego, CA, USA',
+            'beneficiaryAccount' => 'XX1234567890',
+            'beneficiaryReference' => 'Test',
+            'externalPaymentId' => $requestTime.'payTest',
+            'useGbxForFee' => 'true',
+            ]);
+        $paymentParameters->generateTransactionSignature($outgoingSecret);
+
+        $this->expectException(GlobitexApiErrorException::class);
+        $this->expectExceptionMessage('Beneficiary IBAN account is invalid');
+        echo $this->globitexService->makeEuroPayment($paymentParameters);
     }
 }

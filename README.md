@@ -11,36 +11,8 @@ API docs: https://globitex.com/api/
 
 ## Laravel
 
-### Laravel 5.5+
+If you're using Laravel, the package will automatically register the Globitex provider and facade.
 
-If you're using Laravel 5.5 or above, the package will automatically register the Globitex provider and facade.
-
-### Laravel 5.4 and below
-
-Add `bitbuyAT\Globitex\GlobitexServiceProvider` to the providers array in your `config/app.php`:
-
-```php
-'providers' => [
-    // Other service providers...
-
-    bitbuyAT\Globitex\GlobitexServiceProvider::class,
-],
-```
-
-If you want to use the facade interface, you can use the facade class when needed:
-
-```
-use bitbuyAT\Globitex\Facade\Globitex;
-```
-
-Or add an alias in your `config/app.php`:
-
-```php
-'aliases' => [
-    ...
-    'Globitex' => bitbuyAT\Globitex\Facade\Globitex::class,
-],
-```
 
 ## Configuration
 
@@ -72,6 +44,16 @@ _More examples can be found in the `/tests` folder._
 
 All currently supported methods with params explanation can be found in the client interface (`src/Contracts/Client.php`).
 
+#### EURO wallet methods (private)
+
+- [Get Account Information](https://paynexpay.com/api/#get-account-information): `Globitex::getEuroAccountStatus(): EuroAccountsCollection`
+- [Get Account History](https://paynexpay.com/api/#get-account-history): `Globitex::getEuroPaymentHistory(string $fromDate = null, string $toDate = null, string $account = null): EuroPaymentHistory`
+- [Make New Payment](https://paynexpay.com/api/#make-new-payment): `Globitex::makeEuroPayment(EuroPaymentParameters $params, string $transactionSignature = null): EuroPaymentStatus`
+
+### Old methods
+
+Methods that are no longer available since the Globitex exchange was discontinued
+
 #### Market Data methods (public)
 
 - [Get Time](https://globitex.com/api/#restGetTime): `Globitex::getTime(): int`
@@ -92,11 +74,6 @@ All currently supported methods with params explanation can be found in the clie
 - [Get Cryptocurrency Deposit Address](https://globitex.com/api/#CryptoAddressGet): `Globitex::getCryptoCurrencyDepositAddress(string $currency, ?string $account = null): string`
 - [Get Transaction List](https://globitex.com/api/#GetTransactionList): `Globitex::getTransactions(array $params = []): TransactionsCollection`
 - [Get GBX (Globitex Token) Utilization List](https://globitex.com/api/#GbxUtilizationList): `Globitex::getGBXUtilizationTransactions(array $params = []): GBXUtilizationTransactionsCollection`
-
-#### EURO wallet methods (private)
-
-- [Get Account Status](https://globitex.com/api/#GetAccountStatus): `Globitex::getEuroAccountStatus(): EuroAccountsCollection`
-- [Get Payment History](https://globitex.com/api/#GetPaymentHistory): `Globitex:: getEuroPaymentHistory(string $fromDate = null, string $toDate = null, string $account = null): EuroPaymentHistory`
 
 Do you need any further method, which is not listed here? Just open an issue with the required method or even better open a PR to speed things up!
 
