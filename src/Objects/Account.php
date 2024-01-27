@@ -1,6 +1,6 @@
 <?php
 
-namespace bitbuyAT\Globitex\Objects;
+namespace bitbuyAT\Nexpay\Objects;
 
 class Account
 {
@@ -9,9 +9,6 @@ class Account
      */
     protected $data;
 
-    /**
-     * @param array $data
-     */
     public function __construct(array $data)
     {
         $this->data = $data;
@@ -19,8 +16,6 @@ class Account
 
     /**
      * Get Account number.
-     *
-     * @return string
      */
     public function accountNumber(): string
     {
@@ -28,9 +23,7 @@ class Account
     }
 
     /**
-     * Is this default account for client
-     *
-     * @return bool
+     * Is this default account for client.
      */
     public function main(): bool
     {
@@ -39,8 +32,6 @@ class Account
 
     /**
      * Get Balance array.
-     *
-     * @return BalancesCollection
      */
     public function getBalance(): BalancesCollection
     {
@@ -51,8 +42,6 @@ class Account
 
     /**
      * Whole data array.
-     *
-     * @return array
      */
     public function getData(): array
     {

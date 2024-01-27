@@ -1,6 +1,6 @@
 <?php
 
-namespace bitbuyAT\Globitex\Objects;
+namespace bitbuyAT\Nexpay\Objects;
 
 class Pair
 {
@@ -9,9 +9,6 @@ class Pair
      */
     protected $data;
 
-    /**
-     * @param array $data
-     */
     public function __construct(array $data)
     {
         $this->data = $data;
@@ -19,8 +16,6 @@ class Pair
 
     /**
      * Instrument symbol.
-     *
-     * @return string
      */
     public function symbol(): string
     {
@@ -29,8 +24,6 @@ class Pair
 
     /**
      * Order price minimum increment parameter.
-     *
-     * @return string
      */
     public function priceIncrement(): string
     {
@@ -39,8 +32,6 @@ class Pair
 
     /**
      * Order size minimum increment parameter.
-     *
-     * @return int
      */
     public function sizeIncrement(): int
     {
@@ -48,9 +39,7 @@ class Pair
     }
 
     /**
-     * Minimum order size
-     *
-     * @return int
+     * Minimum order size.
      */
     public function sizeMin(): int
     {
@@ -59,8 +48,6 @@ class Pair
 
     /**
      * Price currency for the instrument.
-     *
-     * @return string
      */
     public function currency(): string
     {
@@ -68,9 +55,7 @@ class Pair
     }
 
     /**
-     * Base currency for the instrument
-     *
-     * @return string
+     * Base currency for the instrument.
      */
     public function commodity(): string
     {
@@ -79,8 +64,6 @@ class Pair
 
     /**
      * Whole data array.
-     *
-     * @return array
      */
     public function getData(): array
     {

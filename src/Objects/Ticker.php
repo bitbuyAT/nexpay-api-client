@@ -1,6 +1,6 @@
 <?php
 
-namespace bitbuyAT\Globitex\Objects;
+namespace bitbuyAT\Nexpay\Objects;
 
 class Ticker
 {
@@ -9,9 +9,6 @@ class Ticker
      */
     protected $data;
 
-    /**
-     * @param array $data
-     */
     public function __construct(array $data)
     {
         $this->data = $data;
@@ -19,8 +16,6 @@ class Ticker
 
     /**
      * Last price.
-     *
-     * @return float
      */
     public function lastPrice(): float
     {
@@ -29,8 +24,6 @@ class Ticker
 
     /**
      * Last 24 hours price high.
-     *
-     * @return float
      */
     public function highPrice(): float
     {
@@ -39,8 +32,6 @@ class Ticker
 
     /**
      * Last 24 hours price low.
-     *
-     * @return float
      */
     public function lowPrice(): float
     {
@@ -49,18 +40,14 @@ class Ticker
 
     /**
      * Last 24 hours volume.
-     *
-     * @return float
      */
     public function volume(): float
     {
         return (float) $this->data['volume'];
     }
 
-     /**
-     * Trade volume in second currency per last 24h + last incomplete minute
-     *
-     * @return float
+    /**
+     * Trade volume in second currency per last 24h + last incomplete minute.
      */
     public function volumeQuote(): float
     {
@@ -70,8 +57,6 @@ class Ticker
     /**
      * Bid price
      * Highest buy order.
-     *
-     * @return float
      */
     public function bidPrice(): float
     {
@@ -81,8 +66,6 @@ class Ticker
     /**
      * Ask price
      * Lowest sell order.
-     *
-     * @return float
      */
     public function askPrice(): float
     {
@@ -91,8 +74,6 @@ class Ticker
 
     /**
      * Unix timestamp date and time.
-     *
-     * @return int
      */
     public function timestamp(): int
     {
@@ -101,8 +82,6 @@ class Ticker
 
     /**
      * First price of the day.
-     *
-     * @return float
      */
     public function openPrice(): float
     {
@@ -111,8 +90,6 @@ class Ticker
 
     /**
      * Whole data array.
-     *
-     * @return array
      */
     public function getData(): array
     {

@@ -1,45 +1,45 @@
 <?php
 
-namespace bitbuyAT\Globitex\Contracts;
+namespace bitbuyAT\Nexpay\Contracts;
 
-use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
-use bitbuyAT\Globitex\Objects\Account;
-use bitbuyAT\Globitex\Objects\AccountsCollection;
-use bitbuyAT\Globitex\Objects\CryptoTransactionFee;
-use bitbuyAT\Globitex\Objects\EuroAccountsCollection;
-use bitbuyAT\Globitex\Objects\EuroPaymentHistory;
-use bitbuyAT\Globitex\Objects\ExecutionReport;
-use bitbuyAT\Globitex\Objects\ExecutionReportsCollection;
-use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
-use bitbuyAT\Globitex\Objects\GetMyTradesParameters;
-use bitbuyAT\Globitex\Objects\MyTradesCollection;
-use bitbuyAT\Globitex\Objects\NewOrderParameters;
-use bitbuyAT\Globitex\Objects\OrderBook;
-use bitbuyAT\Globitex\Objects\PairsCollection;
-use bitbuyAT\Globitex\Objects\Ticker;
-use bitbuyAT\Globitex\Objects\TradesCollection;
-use bitbuyAT\Globitex\Objects\TransactionsCollection;
+use bitbuyAT\Nexpay\Exceptions\NexpayApiErrorException;
+use bitbuyAT\Nexpay\Objects\Account;
+use bitbuyAT\Nexpay\Objects\AccountsCollection;
+use bitbuyAT\Nexpay\Objects\CryptoTransactionFee;
+use bitbuyAT\Nexpay\Objects\EuroAccountsCollection;
+use bitbuyAT\Nexpay\Objects\EuroPaymentHistory;
+use bitbuyAT\Nexpay\Objects\ExecutionReport;
+use bitbuyAT\Nexpay\Objects\ExecutionReportsCollection;
+use bitbuyAT\Nexpay\Objects\GBXUtilizationTransactionsCollection;
+use bitbuyAT\Nexpay\Objects\GetMyTradesParameters;
+use bitbuyAT\Nexpay\Objects\MyTradesCollection;
+use bitbuyAT\Nexpay\Objects\NewOrderParameters;
+use bitbuyAT\Nexpay\Objects\OrderBook;
+use bitbuyAT\Nexpay\Objects\PairsCollection;
+use bitbuyAT\Nexpay\Objects\Ticker;
+use bitbuyAT\Nexpay\Objects\TradesCollection;
+use bitbuyAT\Nexpay\Objects\TransactionsCollection;
 
 interface Client
 {
     /**
      * Returns the server time in UNIX timestamp format. Precision – milliseconds.
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getTime(): int;
 
     /**
      * Get ticker information.
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getTicker(string $pair): Ticker;
 
     /**
      * Get order book.
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getOrderBook(string $pair): OrderBook;
 
@@ -51,7 +51,7 @@ interface Client
      *
      * @return TradesCollection|Trade[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getTrades(string $pair, ?string $formatItem = 'object'): TradesCollection;
 
@@ -60,7 +60,7 @@ interface Client
      *
      * @return PairsCollection|Pair[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getAssetPairs(): PairsCollection;
 
@@ -70,7 +70,7 @@ interface Client
      *
      * @param NewOrderParameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function placeNewOrder(NewOrderParameters $newOrderParams): ExecutionReport;
 
@@ -80,7 +80,7 @@ interface Client
      *
      * @param NewOrderParameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function cancelOrder(string $clientOrderId, string $account): ExecutionReport;
 
@@ -90,7 +90,7 @@ interface Client
      *
      * @param NewOrderParameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function cancelAllOrders(array $params = []): ExecutionReportsCollection;
 
@@ -100,7 +100,7 @@ interface Client
      *
      * @param GetMyTradesParameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getMyTrades(GetMyTradesParameters $getMyTradesParams): MyTradesCollection;
 
@@ -109,7 +109,7 @@ interface Client
      *
      * @return AccountsCollection|Account[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getAccountBalance(): AccountsCollection;
 
@@ -121,7 +121,7 @@ interface Client
      * @param string $amount   Withdrawal amount decimal (for example 1.23)
      * @param string $account  number from which funds will be withdrawn (for example: XAZ123A91)
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getCryptoTransactionFee(string $currency, string $amount, string $account): CryptoTransactionFee;
 
@@ -130,37 +130,30 @@ interface Client
      * Returns the previously created incoming cryptocurrency address that can be used to deposit cryptocurrency to your account.
      *
      * @param string $currency Currency code e.g. BTC, for the cryptocurrency address
-     * @param string $amount   Account number the funds will be deposited on. If not provided the cryptocurrency deposit address for the default account will be provided (sample value: XAZ123A91)
      *
      * @return string $address Cryptocurrency deposit address
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
-    public function getCryptoCurrencyDepositAddress(string $currency, ?string $account = null): string;
+    public function getCryptoCurrencyDepositAddress(string $currency, string $account = null): string;
 
     /**
      * Get transactions.
      * Returns a list of payment transactions and their status (array of transactions).
      *
-     * @param array $params=[] Optional Parameters
-     *                         Params can be found under https://globitex.com/api/#GetTransactionList
-     *
      * @return TransactionsCollection|Transaction[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getTransactions(array $params = []): TransactionsCollection;
 
     /**
-     * Get GBX (Globitex Token) Utilization List.
+     * Get GBX (Nexpay Token) Utilization List.
      * Returns a list of GBX utilization transactions (array of transactions).
-     *
-     * @param array $params=[] - Optional Parameters
-     *                         Params can be found under https://globitex.com/api/#GbxUtilizationList
      *
      * @return GBXUtilizationTransactionsCollection|GBXUtilizationTransaction[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getGBXUtilizationTransactions(array $params = []): GBXUtilizationTransactionsCollection;
 
@@ -169,7 +162,7 @@ interface Client
      *
      * @return EuroAccountsCollection|EuroAccount[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getEuroAccountStatus(): EuroAccountsCollection;
 
@@ -182,7 +175,7 @@ interface Client
      *
      * @return EuroAccountsCollection|EuroAccount[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getEuroPaymentHistory(string $fromDate = null, string $toDate = null, string $account = null): EuroPaymentHistory;
 
@@ -194,18 +187,17 @@ interface Client
      * @param string $path       additional path
      * @param array  $parameters query parameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function publicRequest(string $method, string $path = '', $parameters = []): array;
 
     /**
      * Make private request request.
      *
-     * @param string $method            api method
-     * @param array  $parameters        query parameters
-     * @param string $httpMethod='post' http method
+     * @param string $method     api method
+     * @param array  $parameters query parameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function privateRequest(string $method, array $parameters = []): array;
 }

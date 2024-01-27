@@ -1,6 +1,6 @@
 <?php
 
-namespace bitbuyAT\Globitex\Objects;
+namespace bitbuyAT\Nexpay\Objects;
 
 class ExecutionReport
 {

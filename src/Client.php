@@ -1,33 +1,33 @@
 <?php
 
-namespace bitbuyAT\Globitex;
+namespace bitbuyAT\Nexpay;
 
-use bitbuyAT\Globitex\Contracts\Client as ClientContract;
-use bitbuyAT\Globitex\Exceptions\GlobitexApiErrorException;
-use bitbuyAT\Globitex\Objects\Account;
-use bitbuyAT\Globitex\Objects\AccountsCollection;
-use bitbuyAT\Globitex\Objects\CryptoTransactionFee;
-use bitbuyAT\Globitex\Objects\EuroAccount;
-use bitbuyAT\Globitex\Objects\EuroAccountsCollection;
-use bitbuyAT\Globitex\Objects\EuroPaymentHistory;
-use bitbuyAT\Globitex\Objects\EuroPaymentParameters;
-use bitbuyAT\Globitex\Objects\EuroPaymentStatus;
-use bitbuyAT\Globitex\Objects\ExecutionReport;
-use bitbuyAT\Globitex\Objects\ExecutionReportsCollection;
-use bitbuyAT\Globitex\Objects\GBXUtilizationTransaction;
-use bitbuyAT\Globitex\Objects\GBXUtilizationTransactionsCollection;
-use bitbuyAT\Globitex\Objects\GetMyTradesParameters;
-use bitbuyAT\Globitex\Objects\MyTrade;
-use bitbuyAT\Globitex\Objects\MyTradesCollection;
-use bitbuyAT\Globitex\Objects\NewOrderParameters;
-use bitbuyAT\Globitex\Objects\OrderBook;
-use bitbuyAT\Globitex\Objects\Pair;
-use bitbuyAT\Globitex\Objects\PairsCollection;
-use bitbuyAT\Globitex\Objects\Ticker;
-use bitbuyAT\Globitex\Objects\Trade;
-use bitbuyAT\Globitex\Objects\TradesCollection;
-use bitbuyAT\Globitex\Objects\Transaction;
-use bitbuyAT\Globitex\Objects\TransactionsCollection;
+use bitbuyAT\Nexpay\Contracts\Client as ClientContract;
+use bitbuyAT\Nexpay\Exceptions\NexpayApiErrorException;
+use bitbuyAT\Nexpay\Objects\Account;
+use bitbuyAT\Nexpay\Objects\AccountsCollection;
+use bitbuyAT\Nexpay\Objects\CryptoTransactionFee;
+use bitbuyAT\Nexpay\Objects\EuroAccount;
+use bitbuyAT\Nexpay\Objects\EuroAccountsCollection;
+use bitbuyAT\Nexpay\Objects\EuroPaymentHistory;
+use bitbuyAT\Nexpay\Objects\EuroPaymentParameters;
+use bitbuyAT\Nexpay\Objects\EuroPaymentStatus;
+use bitbuyAT\Nexpay\Objects\ExecutionReport;
+use bitbuyAT\Nexpay\Objects\ExecutionReportsCollection;
+use bitbuyAT\Nexpay\Objects\GBXUtilizationTransaction;
+use bitbuyAT\Nexpay\Objects\GBXUtilizationTransactionsCollection;
+use bitbuyAT\Nexpay\Objects\GetMyTradesParameters;
+use bitbuyAT\Nexpay\Objects\MyTrade;
+use bitbuyAT\Nexpay\Objects\MyTradesCollection;
+use bitbuyAT\Nexpay\Objects\NewOrderParameters;
+use bitbuyAT\Nexpay\Objects\OrderBook;
+use bitbuyAT\Nexpay\Objects\Pair;
+use bitbuyAT\Nexpay\Objects\PairsCollection;
+use bitbuyAT\Nexpay\Objects\Ticker;
+use bitbuyAT\Nexpay\Objects\Trade;
+use bitbuyAT\Nexpay\Objects\TradesCollection;
+use bitbuyAT\Nexpay\Objects\Transaction;
+use bitbuyAT\Nexpay\Objects\TransactionsCollection;
 use Carbon\Carbon;
 use GuzzleHttp\ClientInterface as HttpClient;
 
@@ -85,7 +85,7 @@ class Client implements ClientContract
     /**
      * Returns the server time in UNIX timestamp format. Precision – milliseconds.
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getTime(): int
     {
@@ -97,7 +97,7 @@ class Client implements ClientContract
     /**
      * Get ticker information.
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getTicker(string $pair): Ticker
     {
@@ -109,7 +109,7 @@ class Client implements ClientContract
     /**
      * Get order book.
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getOrderBook(string $pair): OrderBook
     {
@@ -126,7 +126,7 @@ class Client implements ClientContract
      *
      * @return TradesCollection|Trade[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getTrades(string $pair, ?string $formatItem = 'object'): TradesCollection
     {
@@ -142,7 +142,7 @@ class Client implements ClientContract
      *
      * @return PairsCollection|Pair[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getAssetPairs(): PairsCollection
     {
@@ -159,7 +159,7 @@ class Client implements ClientContract
      *
      * @param NewOrderParameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function placeNewOrder(NewOrderParameters $newOrderParams): ExecutionReport
     {
@@ -174,7 +174,7 @@ class Client implements ClientContract
      *
      * @param NewOrderParameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function cancelOrder(string $clientOrderId, string $account): ExecutionReport
     {
@@ -192,7 +192,7 @@ class Client implements ClientContract
      *
      * @param NewOrderParameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function cancelAllOrders(array $params = []): ExecutionReportsCollection
     {
@@ -209,7 +209,7 @@ class Client implements ClientContract
      *
      * @param GetMyTradesParameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getMyTrades(GetMyTradesParameters $getMyTradesParams): MyTradesCollection
     {
@@ -225,7 +225,7 @@ class Client implements ClientContract
      *
      * @return AccountsCollection|Account[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getAccountBalance(): AccountsCollection
     {
@@ -244,7 +244,7 @@ class Client implements ClientContract
      * @param string $amount   Withdrawal amount decimal (for example 1.23)
      * @param string $account  number from which funds will be withdrawn (for example: XAZ123A91)
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getCryptoTransactionFee(string $currency, string $amount, string $account): CryptoTransactionFee
     {
@@ -269,7 +269,7 @@ class Client implements ClientContract
      *
      * @return string $address Cryptocurrency deposit address
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getCryptoCurrencyDepositAddress(string $currency, string $account = null): string
     {
@@ -287,7 +287,7 @@ class Client implements ClientContract
      *
      * @return TransactionsCollection|Transaction[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getTransactions(array $params = []): TransactionsCollection
     {
@@ -299,12 +299,12 @@ class Client implements ClientContract
     }
 
     /**
-     * Get GBX (Globitex Token) Utilization List.
+     * Get GBX (Nexpay Token) Utilization List.
      * Returns a list of GBX utilization transactions (array of transactions).
      *
      * @return GBXUtilizationTransactionsCollection|GBXUtilizationTransaction[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getGBXUtilizationTransactions(array $params = []): GBXUtilizationTransactionsCollection
     {
@@ -320,7 +320,7 @@ class Client implements ClientContract
      *
      * @return EuroAccountsCollection|EuroAccount[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getEuroAccountStatus(): EuroAccountsCollection
     {
@@ -343,7 +343,7 @@ class Client implements ClientContract
      *
      * @return EuroAccountsCollection|EuroAccount[]
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function getEuroPaymentHistory(string $fromDate = null, string $toDate = null, string $account = null): EuroPaymentHistory
     {
@@ -362,7 +362,7 @@ class Client implements ClientContract
      * @param EuroPaymentParameters $euroPaymentParameters All Parameters for the transaction
      * @param string                $transactionSignature  External transaction signature
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function makeEuroPayment(
         EuroPaymentParameters $euroPaymentParameters,
@@ -395,11 +395,11 @@ class Client implements ClientContract
      * @param string $path       additional path
      * @param array  $parameters query parameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function publicRequest(string $method, string $path = '', $parameters = []): array
     {
-        $headers = ['User-Agent' => 'Globitex PHP API Agent'];
+        $headers = ['User-Agent' => 'Nexpay PHP API Agent'];
 
         try {
             $response = $this->client->get($this->buildUrl($method, true).($path ? '/' : '').$path, [
@@ -408,9 +408,9 @@ class Client implements ClientContract
             ]);
         } catch (\Exception $exception) {
             if ($exception->getCode() === 404) {
-                throw new GlobitexApiErrorException('Endpoint not found: ('.$this->buildUrl($method).'/'.$path.')');
+                throw new NexpayApiErrorException('Endpoint not found: ('.$this->buildUrl($method).'/'.$path.')');
             } else {
-                throw new GlobitexApiErrorException($exception->getMessage());
+                throw new NexpayApiErrorException($exception->getMessage());
             }
         }
 
@@ -425,7 +425,7 @@ class Client implements ClientContract
      * @param string $method     api method
      * @param array  $parameters query parameters
      *
-     * @throws GlobitexApiErrorException
+     * @throws NexpayApiErrorException
      */
     public function privateRequest(
         string $method,
@@ -434,7 +434,7 @@ class Client implements ClientContract
         string $apiVersion = '1',
         string $rawData = null,
     ): array {
-        $headers = ['User-Agent' => 'Globitex PHP API Agent'];
+        $headers = ['User-Agent' => 'Nexpay PHP API Agent'];
 
         $headers['X-Nonce'] = $this->generateNonce();
         $headers['X-API-Key'] = $this->key;
@@ -454,9 +454,9 @@ class Client implements ClientContract
             }
         } catch (\Exception $exception) {
             if ($exception->getCode() === 404) {
-                throw new GlobitexApiErrorException('Endpoint not found: ('.$this->buildUrl($method).')');
+                throw new NexpayApiErrorException('Endpoint not found: ('.$this->buildUrl($method).')');
             } else {
-                throw new GlobitexApiErrorException($exception);
+                throw new NexpayApiErrorException($exception);
             }
         }
 
@@ -488,7 +488,7 @@ class Client implements ClientContract
     }
 
     /**
-     * Compute globitex signature.
+     * Compute nexpay signature.
      *
      * uri = path [+ '?' + query]
      *
@@ -526,7 +526,7 @@ class Client implements ClientContract
     }
 
     /**
-     * Decode json response from Globitex API.
+     * Decode json response from Nexpay API.
      */
     protected function decodeResult($response): array
     {

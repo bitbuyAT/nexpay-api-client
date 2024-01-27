@@ -1,6 +1,6 @@
 <?php
 
-namespace bitbuyAT\Globitex\Objects;
+namespace bitbuyAT\Nexpay\Objects;
 
 class Balance
 {
@@ -9,18 +9,13 @@ class Balance
      */
     protected $data;
 
-    /**
-     * @param array $data
-     */
     public function __construct(array $data)
     {
         $this->data = $data;
     }
 
     /**
-     * Get Currency symbol, e.g. EUR
-     *
-     * @return string
+     * Get Currency symbol, e.g. EUR.
      */
     public function currency(): string
     {
@@ -28,19 +23,15 @@ class Balance
     }
 
     /**
-     * Get currency amount available for trading or payments
-     *
-     * @return string
+     * Get currency amount available for trading or payments.
      */
     public function available(): string
     {
         return $this->data['available'];
     }
 
-     /**
-     * Currency amount reserved for active orders
-     *
-     * @return string
+    /**
+     * Currency amount reserved for active orders.
      */
     public function reserved(): string
     {
@@ -49,8 +40,6 @@ class Balance
 
     /**
      * Whole data array.
-     *
-     * @return array
      */
     public function getData(): array
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace bitbuyAT\Globitex\Objects;
+namespace bitbuyAT\Nexpay\Objects;
 
 class Transaction
 {
@@ -99,7 +99,7 @@ class Transaction
     }
 
     /**
-     * Beneficiary cryptocurrency address or Globitex cryptocurrency address used for deposits.
+     * Beneficiary cryptocurrency address or Nexpay cryptocurrency address used for deposits.
      */
     public function coinAddress(): string
     {

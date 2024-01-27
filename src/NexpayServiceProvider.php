@@ -1,11 +1,11 @@
 <?php
 
-namespace bitbuyAT\Globitex;
+namespace bitbuyAT\Nexpay;
 
 use GuzzleHttp\Client as HttpClient;
 use Illuminate\Support\ServiceProvider;
 
-class GlobitexServiceProvider extends ServiceProvider
+class NexpayServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap services.
@@ -20,14 +20,14 @@ class GlobitexServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $configPath = __DIR__.'/../config/globitex.php';
-        $this->mergeConfigFrom($configPath, 'globitex');
+        $configPath = __DIR__.'/../config/nexpay.php';
+        $this->mergeConfigFrom($configPath, 'nexpay');
     }
 
     protected function registerClient(): void
     {
         $this->app->singleton(Contracts\Client::class, function () {
-            $config = $this->app->make('config')->get('globitex', []);
+            $config = $this->app->make('config')->get('nexpay', []);
 
             return new Client(
                 new HttpClient(),

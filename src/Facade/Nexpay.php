@@ -1,11 +1,11 @@
 <?php
 
-namespace bitbuyAT\Globitex\Facade;
+namespace bitbuyAT\Nexpay\Facade;
 
-use bitbuyAT\Globitex\Contracts\Client;
+use bitbuyAT\Nexpay\Contracts\Client;
 use Illuminate\Support\Facades\Facade;
 
-class Globitex extends Facade
+class Nexpay extends Facade
 {
     /**
      * Get the registered name of the component.

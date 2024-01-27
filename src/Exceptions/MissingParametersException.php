@@ -1,9 +1,7 @@
 <?php
 
-namespace bitbuyAT\Globitex\Exceptions;
+namespace bitbuyAT\Nexpay\Exceptions;
 
-use Exception;
-
-class MissingParametersException extends Exception
+class MissingParametersException extends \Exception
 {
 }

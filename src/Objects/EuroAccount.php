@@ -1,6 +1,6 @@
 <?php
 
-namespace bitbuyAT\Globitex\Objects;
+namespace bitbuyAT\Nexpay\Objects;
 
 class EuroAccount
 {
@@ -9,9 +9,6 @@ class EuroAccount
      */
     protected $data;
 
-    /**
-     * @param array $data
-     */
     public function __construct(array $data)
     {
         $this->data = $data;
@@ -19,8 +16,6 @@ class EuroAccount
 
     /**
      * Get IBAN number.
-     *
-     * @return string
      */
     public function iban(): string
     {
@@ -29,8 +24,6 @@ class EuroAccount
 
     /**
      * Get IBAN status (ACTIVE/CLOSE).
-     *
-     * @return string
      */
     public function status(): string
     {
@@ -38,9 +31,7 @@ class EuroAccount
     }
 
     /**
-     * Get account balance
-     *
-     * @return string
+     * Get account balance.
      */
     public function balance(): string
     {
@@ -49,8 +40,6 @@ class EuroAccount
 
     /**
      * Whole data array.
-     *
-     * @return array
      */
     public function getData(): array
     {

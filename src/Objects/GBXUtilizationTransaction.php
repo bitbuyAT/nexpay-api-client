@@ -1,6 +1,6 @@
 <?php
 
-namespace bitbuyAT\Globitex\Objects;
+namespace bitbuyAT\Nexpay\Objects;
 
 class GBXUtilizationTransaction
 {
@@ -71,8 +71,7 @@ class GBXUtilizationTransaction
     }
 
     /**
-     * Discount information. Discount object structure can be seen at https://globitex.com/api/#GbxUtilizationList.
-     */
+     * Discount information. 
     public function discount(): array
     {
         return $this->data['discount'] ?? [];

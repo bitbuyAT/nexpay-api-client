@@ -1,6 +1,6 @@
 <?php
 
-namespace bitbuyAT\Globitex\Objects;
+namespace bitbuyAT\Nexpay\Objects;
 
 class EuroPaymentHistory
 {
@@ -9,9 +9,6 @@ class EuroPaymentHistory
      */
     protected $data;
 
-    /**
-     * @param array $data
-     */
     public function __construct(array $data)
     {
         $this->data = $data;
@@ -19,8 +16,6 @@ class EuroPaymentHistory
 
     /**
      * Get Debit turnover balance.
-     *
-     * @return string
      */
     public function debitTurnover(): string
     {
@@ -29,8 +24,6 @@ class EuroPaymentHistory
 
     /**
      * Get Credit turnover balance.
-     *
-     * @return string
      */
     public function creditTurnover(): string
     {
@@ -39,8 +32,6 @@ class EuroPaymentHistory
 
     /**
      * Get Balance start amount.
-     *
-     * @return string
      */
     public function balanceStart(): string
     {
@@ -49,8 +40,6 @@ class EuroPaymentHistory
 
     /**
      * Get Balance end amount.
-     *
-     * @return string
      */
     public function balanceEnd(): string
     {
@@ -59,8 +48,6 @@ class EuroPaymentHistory
 
     /**
      * Get Client full name.
-     *
-     * @return string
      */
     public function clientName(): string
     {
@@ -69,8 +56,6 @@ class EuroPaymentHistory
 
     /**
      * Get Account holder`s IBAN number.
-     *
-     * @return string
      */
     public function account(): string
     {
@@ -78,9 +63,7 @@ class EuroPaymentHistory
     }
 
     /**
-     * Get Array of account transaction entries, see https://globitex.com/api/#GetPaymentHistory.
-     *
-     * @return array
+     * Get Array of account transaction entries, see https://paynexpay.com/api/#get-account-history.
      */
     public function entries(): array
     {
@@ -89,8 +72,6 @@ class EuroPaymentHistory
 
     /**
      * Whole data array.
-     *
-     * @return array
      */
     public function getData(): array
     {

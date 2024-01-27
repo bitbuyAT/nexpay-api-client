@@ -1,9 +1,9 @@
 {
-  "name": "bitbuy-at/globitex-api-client",
+  "name": "bitbuy-at/nexpay-api-client",
   "type": "library",
-  "description": "Client for Globitex.net HTTP API v2 with support for Laravel",
+  "description": "Client for Nexpay HTTP API with support for Laravel",
   "keywords": [
-    "globitex",
+    "nexpay",
     "api",
     "client",
     "HTTP client",
@@ -27,21 +27,21 @@
   },
   "autoload": {
     "psr-4": {
-      "bitbuyAT\\Globitex\\": "src/"
+      "bitbuyAT\\Nexpay\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "bitbuyAT\\Globitex\\": "tests/"
+      "bitbuyAT\\Nexpay\\": "tests/"
     }
   },
   "extra": {
     "laravel": {
       "providers": [
-        "bitbuyAT\\Globitex\\GlobitexServiceProvider"
+        "bitbuyAT\\Nexpay\\NexpayServiceProvider"
       ],
       "aliases": {
-        "Globitex": "bitbuyAT\\Globitex\\Facade\\Globitex"
+        "Nexpay": "bitbuyAT\\Nexpay\\Facade\\Nexpay"
       }
     }
   }
