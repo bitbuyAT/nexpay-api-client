@@ -97,6 +97,7 @@ class PrivateClientTest extends TestCase
 
         $this->expectException(NexpayApiErrorException::class);
         $this->expectExceptionMessage('Debtor and Creditor account number cannot be the same');
+        $this->expectExceptionCode(400);
         echo $this->nexpayService->makeEuroPayment($paymentParameters);
     }
 
@@ -121,6 +122,7 @@ class PrivateClientTest extends TestCase
 
         $this->expectException(NexpayApiErrorException::class);
         $this->expectExceptionMessage('Beneficiary IBAN account is invalid');
+        $this->expectExceptionCode(400);
         echo $this->nexpayService->makeEuroPayment($paymentParameters);
     }
 }

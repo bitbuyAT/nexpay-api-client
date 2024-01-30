@@ -410,7 +410,7 @@ class Client implements ClientContract
             if ($exception->getCode() === 404) {
                 throw new NexpayApiErrorException('Endpoint not found: ('.$this->buildUrl($method).'/'.$path.')');
             } else {
-                throw new NexpayApiErrorException($exception->getMessage());
+                throw new NexpayApiErrorException($exception->getMessage(), $exception->getCode());
             }
         }
 
@@ -456,7 +456,7 @@ class Client implements ClientContract
             if ($exception->getCode() === 404) {
                 throw new NexpayApiErrorException('Endpoint not found: ('.$this->buildUrl($method).')');
             } else {
-                throw new NexpayApiErrorException($exception);
+                throw new NexpayApiErrorException($exception->getMessage(), $exception->getCode());
             }
         }
 
